@@ -86,7 +86,7 @@ int main()
     AfficheFollows();
     creerM();
     cout<<endl;
-    cout<<verification("aaaabbbc");
+    cout<<verification("aaabbbc");
     return 0;
 }
 
