@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D6C39BE220090D66006392A1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C39BE120090D66006392A1 /* main.cpp */; };
+		D6C39BE220090D66006392A1 /* AnalyseLexicale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C39BE120090D66006392A1 /* AnalyseLexicale.cpp */; };
+		D6EAE9A1200A26E0002E9896 /* AnalyseSyntaxique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EAE9A0200A26E0002E9896 /* AnalyseSyntaxique.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +25,8 @@
 
 /* Begin PBXFileReference section */
 		D6C39BDE20090D66006392A1 /* Compiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Compiler; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6C39BE120090D66006392A1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		D6C39BE120090D66006392A1 /* AnalyseLexicale.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseLexicale.cpp; sourceTree = "<group>"; };
+		D6EAE9A0200A26E0002E9896 /* AnalyseSyntaxique.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseSyntaxique.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +59,8 @@
 		D6C39BE020090D66006392A1 /* Compiler */ = {
 			isa = PBXGroup;
 			children = (
-				D6C39BE120090D66006392A1 /* main.cpp */,
+				D6C39BE120090D66006392A1 /* AnalyseLexicale.cpp */,
+				D6EAE9A0200A26E0002E9896 /* AnalyseSyntaxique.cpp */,
 			);
 			path = Compiler;
 			sourceTree = "<group>";
@@ -119,7 +122,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6C39BE220090D66006392A1 /* main.cpp in Sources */,
+				D6EAE9A1200A26E0002E9896 /* AnalyseSyntaxique.cpp in Sources */,
+				D6C39BE220090D66006392A1 /* AnalyseLexicale.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +237,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				COPY_HEADERS_RUN_UNIFDEF = NO;
+				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -241,6 +250,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				COPY_HEADERS_RUN_UNIFDEF = NO;
+				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
