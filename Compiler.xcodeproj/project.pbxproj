@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		D6DD36D0200D3D7F004E0709 /* AnalyseLexicale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */; };
-		D6DD36D2200D41BB004E0709 /* AnalyseSyntaxique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DD36D1200D41BB004E0709 /* AnalyseSyntaxique.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,7 +25,6 @@
 /* Begin PBXFileReference section */
 		D6C39BDE20090D66006392A1 /* Compiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Compiler; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseLexicale.cpp; sourceTree = "<group>"; };
-		D6DD36D1200D41BB004E0709 /* AnalyseSyntaxique.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseSyntaxique.cpp; sourceTree = "<group>"; };
 		D6E4F78E200AB087009FBB57 /* Compiler.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Compiler.profdata; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -61,7 +59,6 @@
 		D6C39BE020090D66006392A1 /* Compiler */ = {
 			isa = PBXGroup;
 			children = (
-				D6DD36D1200D41BB004E0709 /* AnalyseSyntaxique.cpp */,
 				D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */,
 			);
 			path = Compiler;
@@ -132,7 +129,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6DD36D2200D41BB004E0709 /* AnalyseSyntaxique.cpp in Sources */,
 				D6DD36D0200D3D7F004E0709 /* AnalyseLexicale.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

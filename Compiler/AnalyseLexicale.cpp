@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-/*#include <iostream>
-=======
 #include <iostream>
->>>>>>> e09a63db7f90455d2761345aaf0a743ed2455dbe
+#include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
@@ -39,21 +36,12 @@ bool check(string s ){
 void symb_table_insert(string s , string v){
     if(v=="id"&&!check(s)) return ;
     //if((v!="id")||(v=="id"&&!check(s))){
-<<<<<<< HEAD
     tds element ;
     element.nom = s;
     element.ntype =v;
     element.vtype = -1 ;
     element.valeur = 0 ;
     table_de_symbole.push_back(element);
-=======
-        tds element ;
-        element.nom = s;
-        element.ntype =v;
-        element.vtype = -1 ;
-        element.valeur = 0 ;
-        table_de_symbole.push_back(element);
->>>>>>> e09a63db7f90455d2761345aaf0a743ed2455dbe
     //}
     return ;
 }
@@ -128,12 +116,9 @@ bool is_oprel(string s){
 bool is_symb(string s){
     for(int i =0 ; i<6 ; i++){
         if (s == symb[i]){
-<<<<<<< HEAD
             if(symb[i]==";")nbligne++ ;
-=======
+
                 if(symb[i]==";")nbligne++ ;
->>>>>>> e09a63db7f90455d2761345aaf0a743ed2455dbe
-            symb_table_insert(s,"symb");
             return true ;
         }
     }
@@ -292,15 +277,12 @@ int main(){
 
 
     }
-<<<<<<< HEAD
     for(int i =0 ; i<table_de_symbole.size();i++){
         cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
     }
-=======
      for(int i =0 ; i<table_de_symbole.size();i++){
                 cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
             }
->>>>>>> e09a63db7f90455d2761345aaf0a743ed2455dbe
 }
 
 
