@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /*#include <iostream>
+=======
+#include <iostream>
+>>>>>>> e09a63db7f90455d2761345aaf0a743ed2455dbe
 #include <fstream>
 #include <vector>
 #include <string>
@@ -35,12 +39,21 @@ bool check(string s ){
 void symb_table_insert(string s , string v){
     if(v=="id"&&!check(s)) return ;
     //if((v!="id")||(v=="id"&&!check(s))){
+<<<<<<< HEAD
     tds element ;
     element.nom = s;
     element.ntype =v;
     element.vtype = -1 ;
     element.valeur = 0 ;
     table_de_symbole.push_back(element);
+=======
+        tds element ;
+        element.nom = s;
+        element.ntype =v;
+        element.vtype = -1 ;
+        element.valeur = 0 ;
+        table_de_symbole.push_back(element);
+>>>>>>> e09a63db7f90455d2761345aaf0a743ed2455dbe
     //}
     return ;
 }
@@ -115,7 +128,11 @@ bool is_oprel(string s){
 bool is_symb(string s){
     for(int i =0 ; i<6 ; i++){
         if (s == symb[i]){
+<<<<<<< HEAD
             if(symb[i]==";")nbligne++ ;
+=======
+                if(symb[i]==";")nbligne++ ;
+>>>>>>> e09a63db7f90455d2761345aaf0a743ed2455dbe
             symb_table_insert(s,"symb");
             return true ;
         }
@@ -203,7 +220,7 @@ bool is_func(string s){
 //Traitement sur le "mot"
 
 void trait(string mot_lu){
-    
+
     bool est_nombre = false ;
     bool est_id = false ;
     bool est_motcle = false ;
@@ -225,7 +242,7 @@ void trait(string mot_lu){
     if(!danscommentaire&&mot_lu=="*)"){
         cout<<"erreur lexicale "<<mot_lu<<" n'est pas reconnu"<<endl ;
     }
-    
+
     est_motcle= is_key(mot_lu);
     if(!est_motcle){
         est_type=is_type(mot_lu);
@@ -260,7 +277,7 @@ void trait(string mot_lu){
 
 
 int main(){
-    ifstream file("/Users/malekattia/Desktop/program_test.txt");
+    ifstream file("program_test.txt");
     string mot_lu ;
     while(file>>mot_lu){
         decompos.clear();
@@ -271,10 +288,19 @@ int main(){
         }
         else
             trait(mot_lu);
+
+
+
     }
+<<<<<<< HEAD
     for(int i =0 ; i<table_de_symbole.size();i++){
         cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
     }
+=======
+     for(int i =0 ; i<table_de_symbole.size();i++){
+                cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
+            }
+>>>>>>> e09a63db7f90455d2761345aaf0a743ed2455dbe
 }
-*/
+
 
