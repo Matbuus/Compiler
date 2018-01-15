@@ -13,28 +13,49 @@
 using namespace std;
 
 // Variables Globales :
-
+string motscles[]{"program","var","begin","end","if","then","else","while","do"};
+string types[]{"integer","char"};
+string functions[]{"read","readln","write","writeln"};
+string oprel[]{"==","<=","<","<>",">",">="};
+string opadd[]{"+","-","||"};
+string opmul[]{"*","/","%","&&"};
+string symb[]{":=",";",":",",","(",")","(*","*)"};
+string ops[]{"(*","*)","(",")","==","<=","<","<>",">",">=","+","-","||","/","%","&&",":=",";",":",",","*"};
+string all[]{
+    /* Terminaux */
+    "(*","*)","(",")","==","<=","<","<>",">",">=","+","-","||","/","%","&&",":=",";",":",",","*","program","var","begin","end","if","then","else","while","do","integer","char","readln","writeln","write","read","id","#","9"
+    /* Non Terminaux */
+    "", "LISTE_ID","TYPE","INST_COMPOSEE","LISTE_INST","INST","DCL"
+    ,"EXP_SIMPLE","EXP","TERME","FACTEUR","E","V","I","F","D","A","B","P","C"
+};
+int nbProds=0;
+vector<string> grammaire;
+map <string,char> associationSC;
+map <char,string> associationCS;
 map<char,char[25]> firsts; // Premiers
 map<char,char[25]> follow; //Suivants
 map<char,bool> NTer; // NonTerminaux
 map<char,bool> visited;
 map<char,bool> visitedF;
-map<char,map<char,vector<string>>>  TableM; // Table d'analyse
+map< char,map <char,vector<string> > >  TableM; // Table d'analyse
 int limit;
 char production[25][25]; // Les productions de notre grammaire;
 
 // Prototypes :
 void Array_Manipulation(char[], char);
-void findFollow(char *array, char ch);
+void findFollow(char array[], char ch);
 void creerM();
 void AfficheFirsts();
 void AfficheFollows();
 string verification(string ligne);
-void Find_FirstV2(char* array, char ch);
-
+void Find_FirstV2(char array[]  , char ch);
+void prod(string);
+void addProd(string);
+string getOriginal(char[]);
+string getTransformed(string);
 int main()
 {
-    // Obselete: Taper les productions à la main
+    // Obsolete: Taper les productions à la main
     /* printf("\nEnter Total Number of Productions:  ");
      scanf("%d", &limit);
      for(count = 0; count < limit; count++)
@@ -46,6 +67,8 @@ int main()
      */
     
    /*
+    Exemples :
+    
     Exemple : Automate avec | et &
     strcpy(production[0], "E=TS"); //E' = S
     strcpy(production[1], "S=|TS");
@@ -55,19 +78,106 @@ int main()
     strcpy(production[5], "Q=#");
     strcpy(production[6], "F=i"); // i = id
     strcpy(production[7], "F=(E)");
-    */
     
+    Exemple: Classe
+    strcpy(production[0], "S=iCtST"); //S' = T
+    strcpy(production[1], "T=eS");
+    strcpy(production[2], "T=#"); // # = epsilon
+    strcpy(production[3], "S=a");
+    strcpy(production[4], "C=b");
+    limit = 5;
+    
+    */
+    string mot_lu;
     // Exemple : a^n b^n c ; n>1
+    mot_lu="P=programid;DCLINST_COMPOSEE";
+    addProd(mot_lu);
+    /*
+    //TEST
+    mot_lu="INST_COMPOSEE=end";
+    addProd(mot_lu);
+    //END TEST
+     */
+    mot_lu="DCL=A";
+    addProd(mot_lu);
+    mot_lu="A=varLISTE_ID:TYPE;A";
+    addProd(mot_lu);
+    mot_lu="A=#";
+    addProd(mot_lu);
+    mot_lu="LISTE_ID=idB";
+    addProd(mot_lu);
+    mot_lu="B=,idB";
+    addProd(mot_lu);
+    mot_lu="B=#";
+    addProd(mot_lu);
+    mot_lu="TYPE=integer";
+    addProd(mot_lu);
+    mot_lu="TYPE=char";
+    addProd(mot_lu);
+    mot_lu="INST_COMPOSEE=beginINSTend";
+    addProd(mot_lu);
+    mot_lu="INST=LISTE_INST";
+    addProd(mot_lu);
+    mot_lu="INST=#";
+    addProd(mot_lu);
+    mot_lu="LISTE_INST=IV";
+    addProd(mot_lu);
+    mot_lu="V=;IV";
+    addProd(mot_lu);
+    mot_lu="V=#";
+    addProd(mot_lu);
+    mot_lu = "I=id:=EXP_SIMPLE";
+    addProd(mot_lu);
+    mot_lu="I=ifEXPthenIelseI";
+    addProd(mot_lu);
+    mot_lu="I=whileEXPdoI";
+    addProd(mot_lu);
+    mot_lu="I=read(id)";
+    addProd(mot_lu);
+    mot_lu="I=readln(id)";
+    addProd(mot_lu);
+    mot_lu="I=write(id)";
+    addProd(mot_lu);
+    mot_lu="I=writeln(id)";
+    addProd(mot_lu);
+    mot_lu = "EXP=EXP_SIMPLEF";
+    addProd(mot_lu);
+    mot_lu = "EXP_SIMPLE=TERMED";
+    addProd(mot_lu);
+    mot_lu = "D=+TERMED";
+    addProd(mot_lu);
+    mot_lu="D=#";
+    addProd(mot_lu);
+    mot_lu="TERME=FACTEURE";
+    addProd(mot_lu);
+    mot_lu="E=*FACTEURE";
+    addProd(mot_lu);
+    mot_lu="E=#";
+    addProd(mot_lu);
+    mot_lu="FACTEUR=id";
+    addProd(mot_lu);
+    mot_lu="FACTEUR=(EXP_SIMPLE)";
+    addProd(mot_lu);
+    mot_lu="F===EXP_SIMPLE";
+    addProd(mot_lu);
+    mot_lu="F=#";
+    addProd(mot_lu);
+    
+    limit=nbProds;
+    /*
     strcpy(production[0], "Z=XY#");
     strcpy(production[1], "X=aT");
     strcpy(production[2], "T=b");
     strcpy(production[3], "T=Xb");
     strcpy(production[4], "Y=c");
     limit = 5;
-    
-    
-    for(int i=0;production[i][0]!='\0';i++)
+    */
+    for(int i=0;production[i][0]!='\0';i++){
+        cout<<"Production "<<i<<" :  "<<getOriginal(production[i])<<endl;
+    }
+    for(int i=0;production[i][0]!='\0';i++){
         NTer[production[i][0]]=true; // Pour differencier entre les terminaux et les NT
+    }
     
     // TO-DO: Tableau contenant immediatement les T et les NT;
     
@@ -86,7 +196,7 @@ int main()
     AfficheFollows();
     creerM();
     cout<<endl;
-    cout<<verification("aaabbbc");
+    cout<<verification("program;varid,id:char;varid,id:integer;beginreadln(id);readln(id);id:=id+id;whileiddowriteln(id);readln(id)end");
     return 0;
 }
 
@@ -100,9 +210,9 @@ void AfficheFirsts(){
         if(!NTer[it->first]) // On n'affiche pas si c'est un Terminal
             continue;
         cout<<endl;
-        cout<<it->first<<" :  "; //{ ";
+        cout<<associationCS[it->first]<<" :  "; //{ ";
         for(int i=0;(it->second)[i] != '\0'; i++)
-            cout<<it->second[i]<<" ";
+            cout<<associationCS[it->second[i]]<<" ";
         //  cout<<" } ";
     }
 }
@@ -115,9 +225,12 @@ void AfficheFollows(){
         /* Parcours de la map qui fait l'association
          entre le caractère et le tableau qui contient ses suivants */
         cout<<endl;
-        cout<<it->first<<" : ";
-        for(int i=0;(it->second)[i] != '\0'; i++)
-            cout<<it->second[i]<<" ";
+        cout<<associationCS[it->first]<<" : ";
+        for(int i=0;(it->second)[i] != '\0'; i++){
+            if(it->second[i] != '$')
+            cout<<associationCS[it->second[i]]<<" ";
+            else cout<<it->second[i]<<" ";
+        }
     }
 }
 
@@ -174,7 +287,7 @@ void creerM(){ // Algo de classe
         for(int jj=0;jj<premiers.size();jj++){
             //Parcours des premiers 1 par 1 et on applique l'algo 1)
             if(premiers[jj]!='#'){
-                cout<<"M [ "<<production[i][0]<<" , "<<premiers[jj]<<" ]  : " << production[i] << endl;
+                cout<<"M [ "<<associationCS[production[i][0]]<<" , "<<associationCS[premiers[jj]]<<" ]  : " << getOriginal(production[i]) << endl;
                 TableM[production[i][0]][premiers[jj]].push_back(production[i]);
             }
         }
@@ -185,7 +298,7 @@ void creerM(){ // Algo de classe
              aux suivants de A
              */
             for(int kk = 0;follow[production[i][0]][kk]!='\0';kk++){
-                cout<<"M [ "<<production[i][0]<<" , "<<follow[production[i][0]][kk]<<" ]  : " << production[i] << endl;
+                cout<<"M [ "<<associationCS[production[i][0]]<<" , "<<associationCS[follow[production[i][0]][kk]]<<" ]  : " << getOriginal(production[i]) << endl;
                 TableM[production[i][0]][follow[production[i][0]][kk]].push_back(production[i]);
             }
         }
@@ -194,7 +307,8 @@ void creerM(){ // Algo de classe
 
 string verification(string s){ //algo cours verif qu'un mot est accepté par la Grammaire
     stack<char> pile;
-    string ligne=s+'$'; // On ajoute $ à la fin de la chaîne
+    string ligne=getTransformed(s);
+    ligne+= '$';// On ajoute $ à la fin de la chaîne
     pile.push('$'); // on empile $
     pile.push(production[0][0]); // on empile l'axiome
     int i=0;
@@ -213,7 +327,8 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
                 i++; //avancer ps
             }
             else{ // x!= a
-                return s+ " : Erreur. Le mot est invalide.\n";
+                cout<<"X = "<<associationCS[x]<<endl;
+                return "Erreur. Veuillez verifier la position de "+associationCS[a]+"\n";
             }
         }
         else if(NTer[x]) { // X est un non terminal
@@ -226,19 +341,21 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
             }
             else{
                 // Case vide dans la table..
-                return s+ " : Erreur. Le mot est invalide.\n";
+                 cout<<"X = "<<associationCS[x]<<endl;
+                return "Erreur. Veuillez verifier la position de "+associationCS[a]+"\n";
             }
         }
     }
 }
 
-void Find_FirstV2(char* array, char ch) // Algo classe
+void Find_FirstV2(char array[25], char ch) // Algo classe
 {
     bool b=true; // verifier que # existe dans les precedents
     if(visitedF[ch]) // condition d'arrêt, eviter redondance
         return;
     visitedF[ch]=true; // ..
-    if(NTer[ch]){ // verifier que c'est un NT
+    if(NTer[ch]){
+       // cout<<"Here with "<< ch<<endl;// verifier que c'est un NT
         for(int i=0;i<limit;i++){ // on parcourt les productions
             if(production[i][0]==ch){ // ch est dans la partie gauche -> on cherche premiers
                 b=true;
@@ -262,12 +379,14 @@ void Find_FirstV2(char* array, char ch) // Algo classe
             Array_Manipulation(firsts[ch], '#');
     }
     // Terminal
-    else Array_Manipulation(firsts[ch], ch); // son premier est lui-même
+    else {
+        Array_Manipulation(firsts[ch], ch); // son premier est lui-même
+    }
 }
 
 
 //trouve les Suivants;
-void findFollow(char *array, char ch){
+void findFollow(char array[25], char ch){
     if(visited[ch]) // eviter la redondance
         return;
     visited[ch]=true;
@@ -296,3 +415,103 @@ void findFollow(char *array, char ch){
         }
     }
 }
+//is Op
+bool isOp(string mot_lu){
+    for(int i=0;i<37;i++){
+        if(mot_lu == all[i])
+            return true;}
+    return false;
+}
+// verifier que le mot contient un op
+
+bool containsSymb(string mot_lu){
+    for(int i=0;i<37;i++){
+        if(size_t found = mot_lu.find(all[i]) != string::npos)
+            return true;
+    }
+    return false;
+}
+
+// decomposer le mot s'il contient un op
+
+void prod(string mot_lu){
+    size_t found;
+    while(true){
+        for(int i=0;i<56;i++){
+            //on cherche les symboles 1 par 1
+            if((found = mot_lu.find(all[i])) ==0){
+                if(mot_lu!=all[i]){
+                    mot_lu=mot_lu.substr(all[i].size());
+                    grammaire.push_back(all[i]);
+                    i=0;
+                }
+                else {
+                    grammaire.push_back(all[i]);
+                    return;
+                }
+            }
+        }
+    }
+}
+
+// AJOUTER CHAQUE PRODUCTION
+
+
+void addProd(string mot){
+    grammaire.clear(); // Vider le tableau de conversions
+    size_t found;
+    found=mot.find('=');
+    grammaire.push_back(mot.substr(0,found));
+    grammaire.push_back("=");
+    mot=mot.substr(found+1);
+    string ss = "";
+    prod(mot);
+    char a='0';
+    for(int i=0;all[i-1]!="C";i++){
+        if(a=='#' && all[i]!="#")
+            a++;
+        else if(all[i]=="#"){
+            associationSC[all[i]]='#';
+            associationCS['#']=all[i];
+        }
+        else{
+            associationSC[all[i]]=a;
+            associationCS[a]=all[i];
+        }
+        if(i>38)
+            NTer[a]=true;
+        a++;
+    }
+    for(int i=0;i<grammaire.size();i++){
+        if(i!=1)
+            ss+=associationSC[grammaire[i]];
+        else ss+=grammaire[i];
+    }
+    strcpy(production[nbProds],ss.c_str());
+    nbProds++;
+}
+
+// RETOURNE LA CHAINE ORIGINALE
+string getOriginal(char production[]){
+    string s = "";
+    // Transforme les char en la chaine originale
+    s=associationCS[production[0]];
+    s+="=";
+    for(int i=2;production[i]!='\0';i++)
+        s+=associationCS[production[i]];
+    
+    return s;
+}
+
+// RETOURNE LA CHAINE TRANSFORMEE
+string getTransformed(string s){
+    // Transforme notre chaine en chaine de char
+    grammaire.clear();
+    string ss = "";
+    prod(s);
+    for(int i=0;i<grammaire.size();i++)
+            ss+=associationSC[grammaire[i]];
+    return ss;
+    
+}
+

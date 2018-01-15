@@ -11,3 +11,14 @@ Compiler/analyse_lexicale.hpp
 Compiler/main.cpp
 Compiler/TestSynt.cpp
 Compiler/try.cpp
+Compiler/ttt.cpp
+Compiler/Changed.cpp
+Compiler/ttt.cpp
+Compiler/AnalyseSyntaxique copy.cpp
+Compiler/AnalyseLexicale.cpp
+Compiler.xcodeproj/xcuserdata/malekattia.xcuserdatad/xcschemes/Compiler 2.xcscheme
+analyseur_lexical.txt
+Compiler/ApplicationGrammaireDonnée.cpp
+OptimizationProfiles/Compiler.profdata
+Compiler.xcodeproj/xcuserdata/malekattia.xcuserdatad/xcschemes/xcschememanagement.plist
+Compiler.xcodeproj/project.xcworkspace/contents.xcworkspacedata

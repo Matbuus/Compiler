@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D6C39BE220090D66006392A1 /* AnalyseLexicale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C39BE120090D66006392A1 /* AnalyseLexicale.cpp */; };
-		D6EAE9A1200A26E0002E9896 /* AnalyseSyntaxique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EAE9A0200A26E0002E9896 /* AnalyseSyntaxique.cpp */; };
+		D6DD36D0200D3D7F004E0709 /* AnalyseLexicale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */; };
+		D6DD36D2200D41BB004E0709 /* AnalyseSyntaxique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DD36D1200D41BB004E0709 /* AnalyseSyntaxique.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,8 +25,9 @@
 
 /* Begin PBXFileReference section */
 		D6C39BDE20090D66006392A1 /* Compiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Compiler; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6C39BE120090D66006392A1 /* AnalyseLexicale.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseLexicale.cpp; sourceTree = "<group>"; };
-		D6EAE9A0200A26E0002E9896 /* AnalyseSyntaxique.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseSyntaxique.cpp; sourceTree = "<group>"; };
+		D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseLexicale.cpp; sourceTree = "<group>"; };
+		D6DD36D1200D41BB004E0709 /* AnalyseSyntaxique.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseSyntaxique.cpp; sourceTree = "<group>"; };
+		D6E4F78E200AB087009FBB57 /* Compiler.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Compiler.profdata; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +46,7 @@
 			children = (
 				D6C39BE020090D66006392A1 /* Compiler */,
 				D6C39BDF20090D66006392A1 /* Products */,
+				D6E4F78D200AB087009FBB57 /* OptimizationProfiles */,
 			);
 			sourceTree = "<group>";
 		};
@@ -59,10 +61,18 @@
 		D6C39BE020090D66006392A1 /* Compiler */ = {
 			isa = PBXGroup;
 			children = (
-				D6C39BE120090D66006392A1 /* AnalyseLexicale.cpp */,
-				D6EAE9A0200A26E0002E9896 /* AnalyseSyntaxique.cpp */,
+				D6DD36D1200D41BB004E0709 /* AnalyseSyntaxique.cpp */,
+				D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */,
 			);
 			path = Compiler;
+			sourceTree = "<group>";
+		};
+		D6E4F78D200AB087009FBB57 /* OptimizationProfiles */ = {
+			isa = PBXGroup;
+			children = (
+				D6E4F78E200AB087009FBB57 /* Compiler.profdata */,
+			);
+			path = OptimizationProfiles;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -122,8 +132,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6EAE9A1200A26E0002E9896 /* AnalyseSyntaxique.cpp in Sources */,
-				D6C39BE220090D66006392A1 /* AnalyseLexicale.cpp in Sources */,
+				D6DD36D2200D41BB004E0709 /* AnalyseSyntaxique.cpp in Sources */,
+				D6DD36D0200D3D7F004E0709 /* AnalyseLexicale.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,6 +246,7 @@
 		D6C39BE620090D66006392A1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_HEADERS_RUN_UNIFDEF = NO;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
@@ -249,6 +260,7 @@
 		D6C39BE720090D66006392A1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_HEADERS_RUN_UNIFDEF = NO;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = NO;
