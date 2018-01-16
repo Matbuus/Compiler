@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D6DD36D0200D3D7F004E0709 /* AnalyseLexicale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */; };
+		D676EF71200E17B600BD1458 /* AnalyseSyntaxique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D676EF70200E17B600BD1458 /* AnalyseSyntaxique.cpp */; };
+		D676EF73200E1B2600BD1458 /* AnalyseLexicale.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D676EF72200E1B2600BD1458 /* AnalyseLexicale.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,8 +24,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D676EF70200E17B600BD1458 /* AnalyseSyntaxique.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseSyntaxique.cpp; sourceTree = "<group>"; };
+		D676EF72200E1B2600BD1458 /* AnalyseLexicale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseLexicale.cpp; sourceTree = "<group>"; };
 		D6C39BDE20090D66006392A1 /* Compiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Compiler; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnalyseLexicale.cpp; sourceTree = "<group>"; };
 		D6E4F78E200AB087009FBB57 /* Compiler.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Compiler.profdata; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -59,7 +61,8 @@
 		D6C39BE020090D66006392A1 /* Compiler */ = {
 			isa = PBXGroup;
 			children = (
-				D6DD36CF200D3D7F004E0709 /* AnalyseLexicale.cpp */,
+				D676EF72200E1B2600BD1458 /* AnalyseLexicale.cpp */,
+				D676EF70200E17B600BD1458 /* AnalyseSyntaxique.cpp */,
 			);
 			path = Compiler;
 			sourceTree = "<group>";
@@ -129,7 +132,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6DD36D0200D3D7F004E0709 /* AnalyseLexicale.cpp in Sources */,
+				D676EF73200E1B2600BD1458 /* AnalyseLexicale.cpp in Sources */,
+				D676EF71200E17B600BD1458 /* AnalyseSyntaxique.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

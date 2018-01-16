@@ -53,6 +53,7 @@ void prod(string);
 void addProd(string);
 string getOriginal(char[]);
 string getTransformed(string);
+void GenGram();
 int main()
 {
     // Obsolete: Taper les productions à la main
@@ -90,80 +91,14 @@ int main()
     */
     string mot_lu;
     // Exemple : a^n b^n c ; n>1
-    mot_lu="P=programid;DCLINST_COMPOSEE";
-    addProd(mot_lu);
+
     /*
     //TEST
     mot_lu="INST_COMPOSEE=end";
     addProd(mot_lu);
     //END TEST
      */
-    mot_lu="DCL=A";
-    addProd(mot_lu);
-    mot_lu="A=varLISTE_ID:TYPE;A";
-    addProd(mot_lu);
-    mot_lu="A=#";
-    addProd(mot_lu);
-    mot_lu="LISTE_ID=idB";
-    addProd(mot_lu);
-    mot_lu="B=,idB";
-    addProd(mot_lu);
-    mot_lu="B=#";
-    addProd(mot_lu);
-    mot_lu="TYPE=integer";
-    addProd(mot_lu);
-    mot_lu="TYPE=char";
-    addProd(mot_lu);
-    mot_lu="INST_COMPOSEE=beginINSTend";
-    addProd(mot_lu);
-    mot_lu="INST=LISTE_INST";
-    addProd(mot_lu);
-    mot_lu="INST=#";
-    addProd(mot_lu);
-    mot_lu="LISTE_INST=IV";
-    addProd(mot_lu);
-    mot_lu="V=;IV";
-    addProd(mot_lu);
-    mot_lu="V=#";
-    addProd(mot_lu);
-    mot_lu = "I=id:=EXP_SIMPLE";
-    addProd(mot_lu);
-    mot_lu="I=ifEXPthenIelseI";
-    addProd(mot_lu);
-    mot_lu="I=whileEXPdoI";
-    addProd(mot_lu);
-    mot_lu="I=read(id)";
-    addProd(mot_lu);
-    mot_lu="I=readln(id)";
-    addProd(mot_lu);
-    mot_lu="I=write(id)";
-    addProd(mot_lu);
-    mot_lu="I=writeln(id)";
-    addProd(mot_lu);
-    mot_lu = "EXP=EXP_SIMPLEF";
-    addProd(mot_lu);
-    mot_lu = "EXP_SIMPLE=TERMED";
-    addProd(mot_lu);
-    mot_lu = "D=+TERMED";
-    addProd(mot_lu);
-    mot_lu="D=#";
-    addProd(mot_lu);
-    mot_lu="TERME=FACTEURE";
-    addProd(mot_lu);
-    mot_lu="E=*FACTEURE";
-    addProd(mot_lu);
-    mot_lu="E=#";
-    addProd(mot_lu);
-    mot_lu="FACTEUR=id";
-    addProd(mot_lu);
-    mot_lu="FACTEUR=(EXP_SIMPLE)";
-    addProd(mot_lu);
-    mot_lu="F===EXP_SIMPLE";
-    addProd(mot_lu);
-    mot_lu="F=#";
-    addProd(mot_lu);
-    
-    limit=nbProds;
+    GenGram();
     /*
     strcpy(production[0], "Z=XY#");
     strcpy(production[1], "X=aT");
@@ -196,7 +131,7 @@ int main()
     AfficheFollows();
     creerM();
     cout<<endl;
-    cout<<verification("program;varid,id:char;varid,id:integer;beginreadln(id);readln(id);id:=id+id;whileiddowriteln(id);readln(id)end");
+    cout<<verification("programid;varid,id:char;varid,id:integer;beginreadln(id);readln(id);id:=id+id;whileiddowriteln(id);readln(id)end");
     return 0;
 }
 
@@ -327,17 +262,19 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
                 i++; //avancer ps
             }
             else{ // x!= a
-                cout<<"X = "<<associationCS[x]<<endl;
                 return "Erreur. Veuillez verifier la position de "+associationCS[a]+"\n";
             }
         }
         else if(NTer[x]) { // X est un non terminal
             if(TableM[x][a].size()>0){
                 pile.pop();
+                cout<<" X = "<<associationCS[x]<<endl;
                 for(unsigned long kk=TableM[x][a][0].size()-1;kk>1;kk--){
                    //On empile la partie droite de la production
                     pile.push(TableM[x][a][0][kk]);
+                    cout<<associationCS[TableM[x][a][0][kk]]<<" ";
                 }
+                cout<<endl;
             }
             else{
                 // Case vide dans la table..
@@ -515,3 +452,76 @@ string getTransformed(string s){
     
 }
 
+
+void GenGram(){
+    string mot_lu;
+    mot_lu="P=programid;DCLINST_COMPOSEE";
+    addProd(mot_lu);
+    mot_lu="DCL=A";
+    addProd(mot_lu);
+    mot_lu="A=varLISTE_ID:TYPE;A";
+    addProd(mot_lu);
+    mot_lu="A=#";
+    addProd(mot_lu);
+    mot_lu="LISTE_ID=idB";
+    addProd(mot_lu);
+    mot_lu="B=,idB";
+    addProd(mot_lu);
+    mot_lu="B=#";
+    addProd(mot_lu);
+    mot_lu="TYPE=integer";
+    addProd(mot_lu);
+    mot_lu="TYPE=char";
+    addProd(mot_lu);
+    mot_lu="INST_COMPOSEE=beginINSTend";
+    addProd(mot_lu);
+    mot_lu="INST=LISTE_INST";
+    addProd(mot_lu);
+    mot_lu="INST=#";
+    addProd(mot_lu);
+    mot_lu="LISTE_INST=IV";
+    addProd(mot_lu);
+    mot_lu="V=;IV";
+    addProd(mot_lu);
+    mot_lu="V=#";
+    addProd(mot_lu);
+    mot_lu = "I=id:=EXP_SIMPLE";
+    addProd(mot_lu);
+    mot_lu="I=ifEXPthenIelseI";
+    addProd(mot_lu);
+    mot_lu="I=whileEXPdoI";
+    addProd(mot_lu);
+    mot_lu="I=read(id)";
+    addProd(mot_lu);
+    mot_lu="I=readln(id)";
+    addProd(mot_lu);
+    mot_lu="I=write(id)";
+    addProd(mot_lu);
+    mot_lu="I=writeln(id)";
+    addProd(mot_lu);
+    mot_lu = "EXP=EXP_SIMPLEF";
+    addProd(mot_lu);
+    mot_lu = "EXP_SIMPLE=TERMED";
+    addProd(mot_lu);
+    mot_lu = "D=+TERMED";
+    addProd(mot_lu);
+    mot_lu="D=#";
+    addProd(mot_lu);
+    mot_lu="TERME=FACTEURE";
+    addProd(mot_lu);
+    mot_lu="E=*FACTEURE";
+    addProd(mot_lu);
+    mot_lu="E=#";
+    addProd(mot_lu);
+    mot_lu="FACTEUR=id";
+    addProd(mot_lu);
+    mot_lu="FACTEUR=(EXP_SIMPLE)";
+    addProd(mot_lu);
+    mot_lu="F===EXP_SIMPLE";
+    addProd(mot_lu);
+    mot_lu="F=#";
+    addProd(mot_lu);
+    
+    limit=nbProds;
+
+}

@@ -18,8 +18,8 @@ vector<string> decompos;
 typedef struct {
     string nom ;
     string ntype ;
-    int vtype ; // 0 : integer   1 : char
-    int valeur ;
+    int vtype; // 0 : integer   1 : char
+    int valeur;
 }tds ;
 
 vector< tds > table_de_symbole;
@@ -117,8 +117,7 @@ bool is_symb(string s){
     for(int i =0 ; i<6 ; i++){
         if (s == symb[i]){
             if(symb[i]==";")nbligne++ ;
-
-                if(symb[i]==";")nbligne++ ;
+            symb_table_insert(s, "symb");
             return true ;
         }
     }
@@ -262,7 +261,7 @@ void trait(string mot_lu){
 
 
 int main(){
-    ifstream file("program_test.txt");
+    ifstream file("/Users/malekattia/Desktop/program_test.txt");
     string mot_lu ;
     while(file>>mot_lu){
         decompos.clear();
@@ -280,9 +279,6 @@ int main(){
     for(int i =0 ; i<table_de_symbole.size();i++){
         cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
     }
-     for(int i =0 ; i<table_de_symbole.size();i++){
-                cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
-            }
 }
 
 
