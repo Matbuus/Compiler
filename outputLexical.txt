@@ -1,0 +1,1 @@
+programid;varid,id,id:char;varid,id:integer;beginreadln(id);readln(id);readln(id);id:=numberopaddid;id:=idopaddidopmulnumber;id:=idopmulid;whileidopreliddowriteln(id);writeln(id)end

@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <stack>
+#include <fstream>
 /*
  TO DO : TESTER SUR LA GRAMMAIRE FOURNIE:
  FAIRE UNE ASSOCIATION STRING -> CHAR
@@ -13,108 +14,120 @@
 using namespace std;
 
 // Variables Globales :
-string motscles[]{"program","var","begin","end","if","then","else","while","do"};
-string types[]{"integer","char"};
-string functions[]{"read","readln","write","writeln"};
-string oprel[]{"==","<=","<","<>",">",">="};
-string opadd[]{"+","-","||"};
-string opmul[]{"*","/","%","&&"};
-string symb[]{":=",";",":",",","(",")","(*","*)"};
-string ops[]{"(*","*)","(",")","==","<=","<","<>",">",">=","+","-","||","/","%","&&",":=",";",":",",","*"};
-string all[]{
+
+string motscles[]={"program","var","begin","end","if","then","else","while","do"};
+string types[]={"integer","char"};
+string functions[]={"read","readln","write","writeln"};
+string oprel[]={"==","<=","<>",">=","<",">"};
+string opadd[]={"+","-","||"};
+string opmul[]={"*","/","%","&&"};
+string symb[]={":=",";",":",",","(",")","(*","*)"};
+string ops[]={"(*","*)","(",")","==","<=",">=","<>","<",">","+","-","||","/","%","&&",":=",";",":",",","*"};
+string all[]={
     /* Terminaux */
-    "(*","*)","(",")","==","<=","<","<>",">",">=","+","-","||","/","%","&&",":=",";",":",",","*","program","var","begin","end","if","then","else","while","do","integer","char","readln","writeln","write","read","id","#","9"
+    "(*","*)","(",")","==","<=","<","<>",">",">=","+","-","||","/","%","&&",":=",";",":",",","*","program","var","begin","end","if","then","else","while","do","integer","char","readln","writeln","write","read","id","#","opmul","opadd","oprel","number",
     /* Non Terminaux */
-    "", "LISTE_ID","TYPE","INST_COMPOSEE","LISTE_INST","INST","DCL"
+    "LISTE_ID","TYPE","INST_COMPOSEE","LISTE_INST","INST","DCL"
     ,"EXP_SIMPLE","EXP","TERME","FACTEUR","E","V","I","F","D","A","B","P","C"
 };
 int nbProds=0;
 vector<string> grammaire;
 map <string,char> associationSC;
 map <char,string> associationCS;
-map<char,char[25]> firsts; // Premiers
-map<char,char[25]> follow; //Suivants
+map<char,string> firsts; // Premiers
+map<char,string> follow; //Suivants
 map<char,bool> NTer; // NonTerminaux
 map<char,bool> visited;
 map<char,bool> visitedF;
 map< char,map <char,vector<string> > >  TableM; // Table d'analyse
 int limit;
 char production[25][25]; // Les productions de notre grammaire;
+map< string, vector< string > > arbreSyntaxiqueS; // Arbre syntaxique avec les chaines originales
+map< char, vector< char > > arbreSyntaxiqueC; // Arbre syntaxique avec les caractères associés
+vector< string > deriv;
+string Axiome = "P";
+
+vector<string> decompos;
+typedef struct {
+    string nom ;
+    string ntype ;
+    int vtype ; // 0 : integer   1 : char
+    int valeur ;
+}tds ;
+
+vector< tds > table_de_symbole;
+vector<string> table_des_id ;
+
+bool danscommentaire = false ;
+int nbligne = 1 ;
 
 // Prototypes :
-void Array_Manipulation(char[], char);
-void findFollow(char array[], char ch);
+void findFollow(string&, char ch);
 void creerM();
 void AfficheFirsts();
 void AfficheFollows();
 string verification(string ligne);
-void Find_FirstV2(char array[]  , char ch);
+void Find_FirstV2(string&, char ch);
 void prod(string);
-void addProd(string);
+void addProd(string&);
 string getOriginal(char[]);
 string getTransformed(string);
 void GenGram();
+bool isOp(string);
+bool containsOp(string);
+bool is_key(string, ofstream& file2);
+bool is_oprel(string, ofstream& file2);
+bool is_symb(string, ofstream& file2);
+bool is_type(string, ofstream& file2);
+bool is_opadd(string, ofstream& file2);
+bool is_opmul(string, ofstream& file2);
+bool is_id(string, ofstream& file2);
+bool is_number(string, ofstream& file2);
+bool is_func(string, ofstream& file2);
+void trait(string, ofstream& file2);
+void decomp(string mot_lu);
+
+
 int main()
 {
-    // Obsolete: Taper les productions à la main
-    /* printf("\nEnter Total Number of Productions:  ");
-     scanf("%d", &limit);
-     for(count = 0; count < limit; count++)
-     {
-     printf("\nValue of Production Number [%d]:\t", count + 1);
-     scanf("%s", production[count]);
-     NTer[production[count][0]] = true;
-     }
-     */
+    // ANALYSE LEXICALE :
     
-   /*
-    Exemples :
+    string lexical;
+    string code;
+    ifstream file("/Users/malekattia/Desktop/program_test.txt");
+    string mot_lu ;
+    ofstream file2("/Users/malekattia/Desktop/Compiler/outputLexical.txt");
+    while(file>>lexical){
+        decompos.clear();
+        if(containsOp(lexical) && !isOp(lexical)){
+            decomp(lexical);
+            for(int i=0;i<decompos.size();i++)
+                trait(decompos[i],file2);
+        }
+        else
+            trait(lexical,file2);
+    }
+    for(int i =0 ; i<table_de_symbole.size();i++){
+        cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
+    }
+    cout<<endl<<endl<<"table des ids "<<endl<<endl ;
+    for(int i =0 ; i<table_des_id.size();i++){
+        cout<<i<<"  "<<table_des_id[i]<<endl;
+    }
+    file2.close();
+    ifstream file2read("/Users/malekattia/Desktop/Compiler/outputLexical.txt");
+    file2read>>code;
     
-    Exemple : Automate avec | et &
-    strcpy(production[0], "E=TS"); //E' = S
-    strcpy(production[1], "S=|TS");
-    strcpy(production[2], "S=#"); // # = epsilon
-    strcpy(production[3], "T=FQ"); //T' = Q
-    strcpy(production[4], "Q=&FQ");
-    strcpy(production[5], "Q=#");
-    strcpy(production[6], "F=i"); // i = id
-    strcpy(production[7], "F=(E)");
+    // FIN ANALYSE LEXICALE
     
-    Exemple: Classe
-    strcpy(production[0], "S=iCtST"); //S' = T
-    strcpy(production[1], "T=eS");
-    strcpy(production[2], "T=#"); // # = epsilon
-    strcpy(production[3], "S=a");
-    strcpy(production[4], "C=b");
-    limit = 5;
-    
-    */
-    string mot_lu;
-    // Exemple : a^n b^n c ; n>1
-
-    /*
-    //TEST
-    mot_lu="INST_COMPOSEE=end";
-    addProd(mot_lu);
-    //END TEST
-     */
     GenGram();
-    /*
-    strcpy(production[0], "Z=XY#");
-    strcpy(production[1], "X=aT");
-    strcpy(production[2], "T=b");
-    strcpy(production[3], "T=Xb");
-    strcpy(production[4], "Y=c");
-    limit = 5;
-    */
+    
     for(int i=0;production[i][0]!='\0';i++){
         cout<<"Production "<<i<<" :  "<<getOriginal(production[i])<<endl;
     }
     for(int i=0;production[i][0]!='\0';i++){
         NTer[production[i][0]]=true; // Pour differencier entre les terminaux et les NT
     }
-    
-    // TO-DO: Tableau contenant immediatement les T et les NT;
     
     for(int i=0;production[i][0]!='\0';i++){
         for(int j=0;production[i][j]!='\0';j++)
@@ -131,15 +144,17 @@ int main()
     AfficheFollows();
     creerM();
     cout<<endl;
-    cout<<verification("programid;varid,id:char;varid,id:integer;beginreadln(id);readln(id);id:=id+id;whileiddowriteln(id);readln(id)end");
-    return 0;
+    cout<<verification(code);
+    
+    return EXIT_SUCCESS;
+    
 }
 
 //Affiche les premiers;
 
 void AfficheFirsts(){
-    cout<<"\nFIRSTs :"<<endl;
-    for(map<char,char[25]>::iterator it=firsts.begin();it!=firsts.end();it++){
+    cout<<"\n\n\n********\tFIRSTs\t********\n\n"<<endl;
+    for(map<char,string>::iterator it=firsts.begin();it!=firsts.end();it++){
         /* Parcours de la map qui fait l'association
          entre le caractère et le tableau qui contient ses premiers */
         if(!NTer[it->first]) // On n'affiche pas si c'est un Terminal
@@ -148,6 +163,7 @@ void AfficheFirsts(){
         cout<<associationCS[it->first]<<" :  "; //{ ";
         for(int i=0;(it->second)[i] != '\0'; i++)
             cout<<associationCS[it->second[i]]<<" ";
+        
         //  cout<<" } ";
     }
 }
@@ -155,39 +171,54 @@ void AfficheFirsts(){
 //Affiche les follows;
 
 void AfficheFollows(){
-    cout<<"\n\nFOLLOWs :"<<endl;
-    for(map<char,char[25]>::iterator it=follow.begin();it!=follow.end();it++){
+    cout<<"\n\n\n********\tFOLLOWs\t********\n\n"<<endl;
+    for(map<char,string>::iterator it=follow.begin();it!=follow.end();it++){
         /* Parcours de la map qui fait l'association
          entre le caractère et le tableau qui contient ses suivants */
         cout<<endl;
         cout<<associationCS[it->first]<<" : ";
         for(int i=0;(it->second)[i] != '\0'; i++){
             if(it->second[i] != '$')
-            cout<<associationCS[it->second[i]]<<" ";
+                cout<<associationCS[it->second[i]]<<" ";
             else cout<<it->second[i]<<" ";
         }
     }
 }
 
 //ajoute dans une des chaines un element;
+/*
+ void Array_Manipulation(char array[], char value)
+ {
+ int temp;
+ for(temp = 0; array[temp] != '\0'; temp++)
+ {
+ if(array[temp] == value)
+ {
+ return;
+ }
+ }
+ array[temp] = value;
+ array[temp + 1] = '\0';
+ }
+ */
 
-void Array_Manipulation(char array[], char value)
+//ajoute dans une des chaines un element;
+
+void Array_ManipulationV2(string &array, char value)
 {
     int temp;
-    for(temp = 0; array[temp] != '\0'; temp++)
+    for(temp = 0; temp<array.size(); temp++)
     {
         if(array[temp] == value)
         {
             return;
         }
     }
-    array[temp] = value;
-    array[temp + 1] = '\0';
+    array+=value;
 }
-
 //Trouve les premiers de la partie droite d'une production/Succession de NT
 
-vector<char> firstProd(char* ch){
+vector<char> firstProd(char ch[]){
     vector<char> premiers;
     bool b =false;
     for(int i=0;ch[i]!='\0';i++){ // parcours des elements de la production char par char
@@ -215,7 +246,7 @@ vector<char> firstProd(char* ch){
 
 void creerM(){ // Algo de classe
     // Construction + Affichage de la table d'analyse M :
-    cout<<"\n\n\n TABLE M : \n\n\n";
+    cout<<"\n\n\n********\tTABLE M\t********\n\n\n";
     for(int i=0;production[i][0]!='\0';i++){
         vector<char> premiers = firstProd(production[i]+2);
         //Extraire les premiers de alpha (Partie droite de la production ) ds le tableau premiers..
@@ -238,6 +269,7 @@ void creerM(){ // Algo de classe
             }
         }
     }
+    cout<<"\n\n****************\n\n";
 }
 
 string verification(string s){ //algo cours verif qu'un mot est accepté par la Grammaire
@@ -247,6 +279,7 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
     pile.push('$'); // on empile $
     pile.push(production[0][0]); // on empile l'axiome
     int i=0;
+    cout<<"********\tArbre Syntaxique\t********\n"<<endl;
     while(true){
         while(pile.top()=='#'){
             pile.pop();
@@ -254,7 +287,8 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
         char x = pile.top();
         char a =ligne[i];
         if(x=='$' && a=='$'){
-            return s+ " : Mot Bien Accepté.\n";
+            cout<<"\n****************\n"<<endl;
+            return "Code sans erreurs syntaxiques.\n";
         }
         if(NTer[x] == false || x == '$'){
             if(x==a){ // x = a
@@ -262,49 +296,56 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
                 i++; //avancer ps
             }
             else{ // x!= a
+                cout<<"\n****************\n"<<endl;
                 return "Erreur. Veuillez verifier la position de "+associationCS[a]+"\n";
             }
         }
         else if(NTer[x]) { // X est un non terminal
             if(TableM[x][a].size()>0){
                 pile.pop();
-                cout<<" X = "<<associationCS[x]<<endl;
                 for(unsigned long kk=TableM[x][a][0].size()-1;kk>1;kk--){
-                   //On empile la partie droite de la production
+                    //On empile la partie droite de la production
                     pile.push(TableM[x][a][0][kk]);
-                    cout<<associationCS[TableM[x][a][0][kk]]<<" ";
+                    
+                }
+                cout<<associationCS[x]<<" => ";
+                for(unsigned long i = 2 ; i<TableM[x][a][0].size();i++){
+                    arbreSyntaxiqueC[x].push_back(TableM[x][a][0][i]);
+                    arbreSyntaxiqueS[associationCS[x]].push_back(associationCS[TableM[x][a][0][i]]);
+                    cout<<associationCS[TableM[x][a][0][i]]<<" ";
                 }
                 cout<<endl;
             }
             else{
                 // Case vide dans la table..
-                 cout<<"X = "<<associationCS[x]<<endl;
+                cout<<"\n****************\n"<<endl;
                 return "Erreur. Veuillez verifier la position de "+associationCS[a]+"\n";
             }
         }
     }
 }
 
-void Find_FirstV2(char array[25], char ch) // Algo classe
+void Find_FirstV2(string& array, char ch) // Algo classe
 {
     bool b=true; // verifier que # existe dans les precedents
     if(visitedF[ch]) // condition d'arrêt, eviter redondance
         return;
     visitedF[ch]=true; // ..
     if(NTer[ch]){
-       // cout<<"Here with "<< ch<<endl;// verifier que c'est un NT
+        // cout<<"Here with "<< ch<<endl;// verifier que c'est un NT
         for(int i=0;i<limit;i++){ // on parcourt les productions
-            if(production[i][0]==ch){ // ch est dans la partie gauche -> on cherche premiers
+            if(production[i][0]==ch){
+                // ch est dans la partie gauche -> on cherche premiers
                 b=true;
                 for(int pp=2;production[i][pp]!='\0' ;pp++){ // on parcourt la partie droite
                     if(b){
                         b=false;
                         Find_FirstV2(firsts[production[i][pp]],production[i][pp]); // recursivité et recherche des premiers
-                        for(int kk=0;firsts[production[i][pp]][kk]!='\0';kk++){
+                        for(int kk=0;kk<firsts[production[i][pp]].size();kk++){
                             //parcours des premiers trouvés
                             if(firsts[production[i][pp]][kk] != '#'){
                                 // on ajoute a l'ensemble des premiers du parent
-                                Array_Manipulation(firsts[ch], firsts[production[i][pp]][kk]);
+                                Array_ManipulationV2(firsts[ch], firsts[production[i][pp]][kk]);
                             }
                             else b=true; // # (epsilon existe on peut continuer )
                         }
@@ -313,17 +354,17 @@ void Find_FirstV2(char array[25], char ch) // Algo classe
             }
         }
         if(b==true)
-            Array_Manipulation(firsts[ch], '#');
+            Array_ManipulationV2(firsts[ch], '#');
     }
     // Terminal
     else {
-        Array_Manipulation(firsts[ch], ch); // son premier est lui-même
+        Array_ManipulationV2(firsts[ch], ch); // son premier est lui-même
     }
 }
 
 
 //trouve les Suivants;
-void findFollow(char array[25], char ch){
+void findFollow(string& array, char ch){
     if(visited[ch]) // eviter la redondance
         return;
     visited[ch]=true;
@@ -331,23 +372,23 @@ void findFollow(char array[25], char ch){
         for(int j=2;production[count][j]!='\0';j++){
             if(production[count][j]==ch && production[count][j+1]!='\0') // recherche de ch dans la partie droite de la production ( suivants ) + verif qu'il n'est pas en fin de chaine
                 //forme (E -> aCHb )
-                for(int i=0;firsts[production[count][j+1]][i]!='\0';i++){
+                for(int i=0;i<firsts[production[count][j+1]].size();i++){
                     //On ajoute les prochains privés de epsilon
                     if(firsts[production[count][j+1]][i] != '#')
-                        Array_Manipulation(follow[ch], firsts[production[count][j+1]][i]);
+                        Array_ManipulationV2(follow[ch], firsts[production[count][j+1]][i]);
                     else{
                         //Si epsilon appartient aux premiers, on ajoute les premiers du/des suivant(s)
                         findFollow(follow[production[count][0]], production[count][0]);
-                        for(int kk=0;follow[production[count][0]][kk]!='\0';kk++)
-                            Array_Manipulation(follow[ch], follow[production[count][0]][kk]);
+                        for(int kk=0;kk<follow[production[count][0]].size();kk++)
+                            Array_ManipulationV2(follow[ch], follow[production[count][0]][kk]);
                     }
                 }
             else if(production[count][j]==ch){
                 // Ch est trouvé en fin de chaîne ( forme E -> aCH )
                 //Ajout des suivants du parent
                 findFollow(follow[production[count][0]], production[count][0]);
-                for(int kk=0;follow[production[count][0]][kk]!='\0';kk++)
-                    Array_Manipulation(follow[ch], follow[production[count][0]][kk]);
+                for(int kk=0;kk<follow[production[count][0]].size();kk++)
+                    Array_ManipulationV2(follow[ch], follow[production[count][0]][kk]);
             }
         }
     }
@@ -374,7 +415,7 @@ bool containsSymb(string mot_lu){
 void prod(string mot_lu){
     size_t found;
     while(true){
-        for(int i=0;i<56;i++){
+        for(int i=0;i<59 ;i++){
             //on cherche les symboles 1 par 1
             if((found = mot_lu.find(all[i])) ==0){
                 if(mot_lu!=all[i]){
@@ -394,7 +435,7 @@ void prod(string mot_lu){
 // AJOUTER CHAQUE PRODUCTION
 
 
-void addProd(string mot){
+void addProd(string& mot){
     grammaire.clear(); // Vider le tableau de conversions
     size_t found;
     found=mot.find('=');
@@ -415,7 +456,7 @@ void addProd(string mot){
             associationSC[all[i]]=a;
             associationCS[a]=all[i];
         }
-        if(i>38)
+        if(i>41)
             NTer[a]=true;
         a++;
     }
@@ -447,14 +488,14 @@ string getTransformed(string s){
     string ss = "";
     prod(s);
     for(int i=0;i<grammaire.size();i++)
-            ss+=associationSC[grammaire[i]];
+        ss+=associationSC[grammaire[i]];
     return ss;
     
 }
 
 
 void GenGram(){
-    string mot_lu;
+    string mot_lu="";
     mot_lu="P=programid;DCLINST_COMPOSEE";
     addProd(mot_lu);
     mot_lu="DCL=A";
@@ -503,25 +544,255 @@ void GenGram(){
     addProd(mot_lu);
     mot_lu = "EXP_SIMPLE=TERMED";
     addProd(mot_lu);
-    mot_lu = "D=+TERMED";
+    mot_lu = "D=opaddTERMED";
     addProd(mot_lu);
     mot_lu="D=#";
     addProd(mot_lu);
     mot_lu="TERME=FACTEURE";
     addProd(mot_lu);
-    mot_lu="E=*FACTEURE";
+    mot_lu="E=opmulFACTEURE";
     addProd(mot_lu);
     mot_lu="E=#";
     addProd(mot_lu);
     mot_lu="FACTEUR=id";
     addProd(mot_lu);
+    mot_lu="FACTEUR=number";
+    addProd(mot_lu);
     mot_lu="FACTEUR=(EXP_SIMPLE)";
     addProd(mot_lu);
-    mot_lu="F===EXP_SIMPLE";
+    mot_lu="F=oprelEXP_SIMPLE";
     addProd(mot_lu);
     mot_lu="F=#";
     addProd(mot_lu);
-    
     limit=nbProds;
-
+    
 }
+/*
+ void arbre(string s){
+ cout<<s<<" => ";
+ for(int i=0;i<arbreSyntaxiqueS[s].size();i++)
+ cout<<arbreSyntaxiqueS[s][i]<<" ";
+ cout<<endl;
+ for(int i=0;i<arbreSyntaxiqueS[s].size();i++)
+ if(arbreSyntaxiqueS[arbreSyntaxiqueS[s][i]].size()!=0)
+ arbre(arbreSyntaxiqueS[s][i]);
+ 
+ }
+ */
+bool check(string s ){
+    for(int i=0 ; i<table_de_symbole.size();i++){
+        if(table_de_symbole[i].nom==s) return false;
+    }
+    return true ;
+}
+void insert_id(string s ){
+    table_des_id.push_back(s);
+}
+void symb_table_insert(string s , string v){
+    if(v=="id"&&!check(s)) return ;
+    if(v=="id") insert_id(s);
+    //if((v!="id")||(v=="id"&&!check(s))){
+    tds element ;
+    element.nom = s;
+    element.ntype =v;
+    element.vtype = -1 ;
+    element.valeur = 0 ;
+    table_de_symbole.push_back(element);
+    //}
+    return ;
+}
+
+// verifier que le mot contient un op
+
+bool containsOp(string mot_lu){
+    for(int i=0;i<21;i++){
+        if(size_t found = mot_lu.find(ops[i]) != string::npos)
+            return true;
+    }
+    return false;
+}
+
+// decomposer le mot s'il contient un op
+
+void decomp(string mot_lu){
+    size_t found;
+    for(int i=0;i<21;i++){
+        if((found = mot_lu.find(ops[i])) != string::npos){
+            if(mot_lu.substr(0,found)!= "")
+                decompos.push_back(mot_lu.substr(0,found));
+            decompos.push_back(ops[i]);
+            if(containsOp(mot_lu.substr(found + ops[i].size())))
+                decomp(mot_lu.substr(found + ops[i].size()));
+            else{
+                if(mot_lu.substr(found + ops[i].size())!= "")
+                    decompos.push_back(mot_lu.substr(found + ops[i].size()));
+                return;
+            }
+            break;
+        }
+    }
+}
+
+// Verifier si le mot est un mot cl»
+
+bool is_key(string s ,ofstream& file2){
+    for(int i = 0 ;i<9;i++){
+        if (s == motscles[i]){
+            symb_table_insert(s,"keyword");
+            file2<<motscles[i];
+            return true ;
+        }
+    }
+    return false ;
+}
+
+// Verifier si le mot est un oprel
+
+bool is_oprel(string s,ofstream& file2){
+    for(int i = 0 ;i<6;i++){
+        if (s == oprel[i]){
+            symb_table_insert(s,"oprel");
+            file2<<"oprel";
+            return true ;
+        }
+    }
+    return false ;
+}
+
+// Verifier si le mot est un symbole
+
+bool is_symb(string s,ofstream& file2){
+    for(int i =0 ; i<6 ; i++){
+        if (s == symb[i]){
+            if(symb[i]==";")nbligne++ ;
+            symb_table_insert(s,"symb");
+            file2<<symb[i];
+            return true ;
+        }
+    }
+    return false ;
+}
+
+// Verifier si le mot est un nom de type
+
+bool is_type(string s ,ofstream& file2){
+    for(int i = 0 ; i<2 ; i++){
+        if(s==types[i]){
+            symb_table_insert(s,"type");
+            file2<<types[i];
+            return true ;
+        }
+    }
+    return false ;
+}
+
+// Verifier si le mot est un opadd
+
+bool is_opadd(string s ,ofstream& file2){
+    for(int i = 0 ;i<3;i++){
+        if (s == opadd[i]){
+            symb_table_insert(s,"opadd");
+            file2<<"opadd";
+            return true ;
+        }
+    }
+    return false;
+}
+
+// Verifier si le mot est un opmul
+
+bool is_opmul(string s,ofstream& file2){
+    for(int i = 0 ;i<4;i++){
+        if (s == opmul[i]){
+            symb_table_insert(s,"opmul");
+            file2<<"opmul";
+            return true ;
+        }
+    }
+    return false ;
+}
+
+// Verifier si le mot est un id
+
+bool is_id(string s,ofstream& file2){
+    if((s[0]>='a'&&s[0]<='z')||(s[0]>='A'&&s[0]<='Z')){
+        for(int i =1 ; i<s.size();i++){
+            if((s[i]<'a'||s[i]>'z')&&(s[i]<'A'||s[i]>'Z')){
+                if(s[i]<'0'||s[i]>'9')
+                    return false ;
+            }
+        }
+        symb_table_insert(s,"id");
+        file2<<"id";
+        return true ;
+    }
+    return false ;
+}
+
+// Verifier si le mot est un nombre
+
+bool is_number(string s,ofstream& file2){
+    for(int i=0 ; i<s.size();i++){
+        if(s[i]<'0'||s[i]>'9'){
+            return false ;
+        }
+    }
+    symb_table_insert(s,"number");
+    file2<<"number";
+    return true ;
+}
+
+// Verifier si le mot est une fonction
+
+bool is_func(string s,ofstream& file2){
+    for(int i =0 ; i<4;i++){
+        if(s== functions[i]){
+            symb_table_insert(s,"function");
+            file2<<functions[i];
+            return true ;
+        }
+    }
+    return false ;
+}
+
+
+//Traitement sur le "mot"
+
+void trait(string mot_lu,ofstream& file2){
+    
+    if(danscommentaire&&mot_lu!="*)")return ;
+    if(mot_lu=="(*") {
+        danscommentaire=true ;
+        return;
+    }
+    if(danscommentaire&&mot_lu=="*)"){
+        danscommentaire=false ;
+        return;
+    }
+    if(!danscommentaire&&mot_lu=="*)"){
+        cout<<"erreur lexicale "<<mot_lu<<" n'est pas reconnu"<<endl ;
+    }
+    
+    
+    if(!is_key(mot_lu,file2)){
+        if(!is_type(mot_lu,file2)){
+            if(!is_oprel(mot_lu,file2)){
+                if(!is_symb(mot_lu,file2)){
+                    if(!is_opadd(mot_lu,file2)){
+                        if(!is_opmul(mot_lu,file2)){
+                            if(!is_func(mot_lu,file2)){
+                                if(!is_id(mot_lu,file2)){
+                                    if(!is_number(mot_lu,file2)){
+                                        cout<<"erreur lexicale dans la ligne "<<nbligne<<" le mot saisi "<<mot_lu<<" n'est pas reconnu"<<endl ;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
