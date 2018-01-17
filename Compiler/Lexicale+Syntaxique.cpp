@@ -5,8 +5,9 @@
 #include <iostream>
 #include <stack>
 #include <fstream>
+#include <stdlib.h>
 #include <algorithm>
-#include <string>
+#include <cstring>
 /*
  TO DO : TESTER SUR LA GRAMMAIRE FOURNIE:
  FAIRE UNE ASSOCIATION STRING -> CHAR
