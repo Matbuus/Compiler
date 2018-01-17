@@ -73,7 +73,7 @@ void findFollow(string&, char ch);
 void creerM();
 void AfficheFirsts();
 void AfficheFollows();
-string verification(string ligne);
+vector<string> verification(string ligne);
 void Find_FirstV2(string&, char ch);
 void prod(string);
 void addProd(string&);
@@ -152,7 +152,9 @@ int main()
     AfficheFollows();
     creerM();
     cout<<endl;
-    cout<<verification(code)<<endl;
+    vector<string> verif = verification(code);
+    for(int i=0;i<verif.size();i++)
+        cout<<verif[i];
     
     
     /*
@@ -294,11 +296,16 @@ void creerM(){ // Algo de classe
     cout<<"\n\n****************\n\n";
 }
 
-string verification(string s){ //algo cours verif qu'un mot est accepté par la Grammaire
+vector<string> verification(string s){ //algo cours verif qu'un mot est accepté par la Grammaire
+    vector<string> messages;
     stack<char> pile;
     string ligne=getTransformed(s);
     bool declarations = false;
-    int intermediaire = 1,numero_id_courrant=-1; // apparitionsID[numero_id_courant] nous renseigne sur quel id on travaille actuellement, a utiliser semantique
+    int num_ligne_courante=1;
+    int once=0; // Pour n'ajouter la ligne de begin qu'une seule fois TO-FIX
+    int intermediaire = 1,numero_id_courant=-1;
+    
+    // apparitionsID[numero_id_courant] nous renseigne sur quel id on travaille actuellement, a utiliser semantique
     
     ligne+= '$';// On ajoute $ à la fin de la chaîne
     pile.push('$'); // on empile $
@@ -309,11 +316,21 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
         while(pile.top()=='#'){
             pile.pop();
         }
+        bool b=false;
         char x = pile.top();
         char a =ligne[i];
+        // Mise a jour de la ligne courante
+        if(associationCS[a]==";")//A chaque rencontre de ; on inc
+            num_ligne_courante++;
+        // Fin de Mise a jour de la ligne courante
+        
         if(x=='$' && a=='$'){
             cout<<"\n****************\n"<<endl;
-            return "Code sans erreurs syntaxiques.\n";
+            if(messages.empty())
+                messages.push_back("Code sans erreurs syntaxiques.\n");
+            else
+                messages.push_back("Analyse terminée. Veuillez corriger les erreurs SVP.\n\n");
+            return messages;
         }
         if(NTer[x] == false || x == '$'){
             if(x==a){ // x = a
@@ -321,8 +338,9 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
                 i++; //avancer ps
             }
             else{ // x!= a
-                cout<<"\n****************\n"<<endl;
-                return "Erreur. Veuillez verifier la position de "+associationCS[a]+"\n";
+                pile.pop();
+                string topush="Erreur. "+associationCS[x]+" manquant ligne "+to_string(num_ligne_courante)+"\n";
+                messages.push_back(topush);
             }
         }
         else if(NTer[x]) { // X est un non terminal
@@ -342,40 +360,51 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
                     // Calcul du nbr d'id dans la declaration:
                     if(declarations && associationCS[TableM[x][a][0][i]]=="id"){
                         nbId++;
-                        numero_id_courrant++;
+                        numero_id_courant++;
                     }
                     else if(associationCS[TableM[x][a][0][i]]=="id")
-                        numero_id_courrant++;
+                        numero_id_courant++;
                 }
                 cout<<endl;
+                
                 // Mise a jour de la table de symboles :
+                
                 if(associationCS[a]=="var"){
                     declarations = true;
                 }
                 else if(declarations && (associationCS[a]=="integer" || associationCS[a]=="char")){
                     if(associationCS[a] == "char"){
                         for(int i=intermediaire;i<intermediaire+nbId-1;i++)
-                            setType(table_des_id[i], "char");
+                            setType(table_des_id[i], "char"); // Donner a chaque ID son type
                     }
                     else{
                         for(int i=intermediaire;i<intermediaire+nbId-1;i++)
-                            setType(table_des_id[i], "integer");
+                            setType(table_des_id[i], "integer");// Donner a chaque ID son type
                     }
                     intermediaire=intermediaire+nbId-1;
                     nbId=1;
                 }
                 else if (declarations && associationCS[a]==";")
-                    declarations = false;
+                    declarations = false; // Fin des declarations
                 
                 
             }
             else{
                 // Case vide dans la table..
-                cout<<"\n****************\n"<<endl;
-                return "Erreur. Veuillez verifier la position de "+associationCS[a]+"\n";
+                messages.push_back("Erreur. Veuillez verifier la syntaxe de "+associationCS[a]+" a la ligne "+to_string(num_ligne_courante)+" ou verifier la presence du \";\" a la ligne "+to_string(num_ligne_courante-1)+" \n");
+                for(int ind = i;ind<ligne.size() && !b;ind++){
+                    for(int kk=0;kk<follow[x].size() && !b ;kk++){
+                        if(follow[x][kk]==ligne[ind]){
+                            i=ind;
+                            pile.pop();
+                            b=true;
+                        }
+                    }
+                }
             }
         }
     }
+    return messages;
 }
 
 void Find_FirstV2(string& array, char ch) // Algo classe
