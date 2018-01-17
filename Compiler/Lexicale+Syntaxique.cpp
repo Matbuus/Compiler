@@ -5,6 +5,8 @@
 #include <iostream>
 #include <stack>
 #include <fstream>
+#include <algorithm>
+#include <string>
 /*
  TO DO : TESTER SUR LA GRAMMAIRE FOURNIE:
  FAIRE UNE ASSOCIATION STRING -> CHAR
@@ -41,7 +43,7 @@ map<char,bool> visited;
 map<char,bool> visitedF;
 map< char,map <char,vector<string> > >  TableM; // Table d'analyse
 int limit;
-char production[25][25]; // Les productions de notre grammaire;
+vector< string > production; // Les productions de notre grammaire;
 map< string, vector< string > > arbreSyntaxiqueS; // Arbre syntaxique avec les chaines originales
 map< char, vector< char > > arbreSyntaxiqueC; // Arbre syntaxique avec les caractères associés
 vector< string > deriv;
@@ -60,6 +62,8 @@ vector<string> table_des_id ;
 
 bool danscommentaire = false ;
 int nbligne = 1 ;
+int nbInsts=0,nbId=1,nbOp=0;
+vector<string> apparitionIds; // Ordre des appartitions des IDs ( A utiliser fel semantique )
 
 // Prototypes :
 void findFollow(string&, char ch);
@@ -70,7 +74,7 @@ string verification(string ligne);
 void Find_FirstV2(string&, char ch);
 void prod(string);
 void addProd(string&);
-string getOriginal(char[]);
+string getOriginal(string);
 string getTransformed(string);
 void GenGram();
 bool isOp(string);
@@ -86,6 +90,7 @@ bool is_number(string, ofstream& file2);
 bool is_func(string, ofstream& file2);
 void trait(string, ofstream& file2);
 void decomp(string mot_lu);
+void setType(string s,string ss);
 
 
 int main()
@@ -110,27 +115,27 @@ int main()
     for(int i =0 ; i<table_de_symbole.size();i++){
         cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
     }
-    cout<<endl<<endl<<"table des ids "<<endl<<endl ;
+    cout<<endl<<endl<<"*****\tTABLE DES IDs\t*****\n\n"<<endl;
     for(int i =0 ; i<table_des_id.size();i++){
         cout<<i<<"  "<<table_des_id[i]<<endl;
     }
+    cout<<"\n\n****************\n\n\n";
     file2.close();
     ifstream file2read("/Users/malekattia/Desktop/Compiler/outputLexical.txt");
     file2read>>code;
-    
     // FIN ANALYSE LEXICALE
     
     GenGram();
     
-    for(int i=0;production[i][0]!='\0';i++){
+    for(int i=0;i<production.size();i++){
         cout<<"Production "<<i<<" :  "<<getOriginal(production[i])<<endl;
     }
-    for(int i=0;production[i][0]!='\0';i++){
+    for(int i=0;i<production.size();i++){
         NTer[production[i][0]]=true; // Pour differencier entre les terminaux et les NT
     }
     
-    for(int i=0;production[i][0]!='\0';i++){
-        for(int j=0;production[i][j]!='\0';j++)
+    for(int i=0;i<production.size();i++){
+        for(int j=0;j<production[i].length();j++)
             Find_FirstV2(firsts[production[i][j]], production[i][j]); // On remplit les tableaux des premiers pour chaque symbole
         
     }
@@ -144,8 +149,22 @@ int main()
     AfficheFollows();
     creerM();
     cout<<endl;
-    cout<<verification(code);
+    cout<<verification(code)<<endl;
     
+    
+    /*
+    // Verifications des types :
+    for(int i=0;i<table_de_symbole.size();i++){
+        if(table_de_symbole[i].ntype=="id")
+            cout<<"Nom : "<<table_de_symbole[i].nom<<" et type : "<<table_de_symbole[i].vtype<<endl;
+    }
+    //
+    for(int i=0;i<apparitionIds.size();i++){
+        cout<<" ID: "<<apparitionIds[i]<<endl;
+    }
+    
+    // TO-DO : SEMANTIQUE
+     */
     return EXIT_SUCCESS;
     
 }
@@ -218,10 +237,10 @@ void Array_ManipulationV2(string &array, char value)
 }
 //Trouve les premiers de la partie droite d'une production/Succession de NT
 
-vector<char> firstProd(char ch[]){
+vector<char> firstProd(string ch){
     vector<char> premiers;
     bool b =false;
-    for(int i=0;ch[i]!='\0';i++){ // parcours des elements de la production char par char
+    for(int i=0;i<ch.size();i++){ // parcours des elements de la production char par char
         b= false;
         for(int j=0;firsts[ch[i]][j]!='\0';j++){ // parcours des premiers de chaque char
             if(firsts[ch[i]][j]=='#')
@@ -247,8 +266,8 @@ vector<char> firstProd(char ch[]){
 void creerM(){ // Algo de classe
     // Construction + Affichage de la table d'analyse M :
     cout<<"\n\n\n********\tTABLE M\t********\n\n\n";
-    for(int i=0;production[i][0]!='\0';i++){
-        vector<char> premiers = firstProd(production[i]+2);
+    for(int i=0;i<production.size();i++){
+        vector<char> premiers = firstProd(production[i].substr(2));
         //Extraire les premiers de alpha (Partie droite de la production ) ds le tableau premiers..
         for(int jj=0;jj<premiers.size();jj++){
             //Parcours des premiers 1 par 1 et on applique l'algo 1)
@@ -275,6 +294,9 @@ void creerM(){ // Algo de classe
 string verification(string s){ //algo cours verif qu'un mot est accepté par la Grammaire
     stack<char> pile;
     string ligne=getTransformed(s);
+    bool declarations = false;
+    int intermediaire = 1,numero_id_courrant=-1; // apparitionsID[numero_id_courant] nous renseigne sur quel id on travaille actuellement, a utiliser semantique
+    
     ligne+= '$';// On ajoute $ à la fin de la chaîne
     pile.push('$'); // on empile $
     pile.push(production[0][0]); // on empile l'axiome
@@ -308,13 +330,41 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
                     pile.push(TableM[x][a][0][kk]);
                     
                 }
+
                 cout<<associationCS[x]<<" => ";
                 for(unsigned long i = 2 ; i<TableM[x][a][0].size();i++){
                     arbreSyntaxiqueC[x].push_back(TableM[x][a][0][i]);
                     arbreSyntaxiqueS[associationCS[x]].push_back(associationCS[TableM[x][a][0][i]]);
                     cout<<associationCS[TableM[x][a][0][i]]<<" ";
+                    // Calcul du nbr d'id dans la declaration:
+                    if(declarations && associationCS[TableM[x][a][0][i]]=="id"){
+                        nbId++;
+                        numero_id_courrant++;
+                    }
+                    else if(associationCS[TableM[x][a][0][i]]=="id")
+                        numero_id_courrant++;
                 }
                 cout<<endl;
+                // Mise a jour de la table de symboles :
+                if(associationCS[a]=="var"){
+                    declarations = true;
+                }
+                else if(declarations && (associationCS[a]=="integer" || associationCS[a]=="char")){
+                    if(associationCS[a] == "char"){
+                        for(int i=intermediaire;i<intermediaire+nbId-1;i++)
+                            setType(table_des_id[i], "char");
+                    }
+                    else{
+                        for(int i=intermediaire;i<intermediaire+nbId-1;i++)
+                            setType(table_des_id[i], "integer");
+                    }
+                    intermediaire=intermediaire+nbId-1;
+                    nbId=1;
+                }
+                else if (declarations && associationCS[a]==";")
+                    declarations = false;
+                    
+                
             }
             else{
                 // Case vide dans la table..
@@ -445,6 +495,7 @@ void addProd(string& mot){
     string ss = "";
     prod(mot);
     char a='0';
+    // Fait la transformation Chaines -> Caractères
     for(int i=0;all[i-1]!="C";i++){
         if(a=='#' && all[i]!="#")
             a++;
@@ -465,17 +516,18 @@ void addProd(string& mot){
             ss+=associationSC[grammaire[i]];
         else ss+=grammaire[i];
     }
-    strcpy(production[nbProds],ss.c_str());
+    // Ajouter au tableau des productions
+    production.push_back(ss);
     nbProds++;
 }
 
 // RETOURNE LA CHAINE ORIGINALE
-string getOriginal(char production[]){
+string getOriginal(string production){
     string s = "";
     // Transforme les char en la chaine originale
     s=associationCS[production[0]];
     s+="=";
-    for(int i=2;production[i]!='\0';i++)
+    for(int i=2;i<production.size();i++)
         s+=associationCS[production[i]];
     
     return s;
@@ -493,7 +545,7 @@ string getTransformed(string s){
     
 }
 
-
+// Generation de la grammaire: A changer pr une autre grammaire:
 void GenGram(){
     string mot_lu="";
     mot_lu="P=programid;DCLINST_COMPOSEE";
@@ -579,15 +631,37 @@ void GenGram(){
  
  }
  */
+
+// Mise a jour du type dans la table de symbole :
+
+void setType(string s,string ss){
+    for(int i=0 ; i<table_de_symbole.size();i++){
+        if(table_de_symbole[i].nom==s){
+            if(ss=="integer")
+                table_de_symbole[i].vtype = 0;
+            else
+                table_de_symbole[i].vtype = 1;
+        }
+        
+    }
+    
+}
+
+
+// Verifier que l'élément est present dans la table de symboles :
 bool check(string s ){
     for(int i=0 ; i<table_de_symbole.size();i++){
         if(table_de_symbole[i].nom==s) return false;
     }
     return true ;
 }
+// Inserer id dans la table des Id
 void insert_id(string s ){
     table_des_id.push_back(s);
 }
+
+// Inserer Element dans la table de symboles :
+
 void symb_table_insert(string s , string v){
     if(v=="id"&&!check(s)) return ;
     if(v=="id") insert_id(s);
@@ -724,6 +798,7 @@ bool is_id(string s,ofstream& file2){
         }
         symb_table_insert(s,"id");
         file2<<"id";
+        apparitionIds.push_back(s);
         return true ;
     }
     return false ;
