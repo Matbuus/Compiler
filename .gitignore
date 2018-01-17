@@ -23,5 +23,3 @@ OptimizationProfiles/Compiler.profdata
 Compiler.xcodeproj/xcuserdata/malekattia.xcuserdatad/xcschemes/xcschememanagement.plist
 Compiler.xcodeproj/project.xcworkspace/contents.xcworkspacedata
 Compiler/AnalyseLexicale.cpp
-Compiler/try
-TestExec

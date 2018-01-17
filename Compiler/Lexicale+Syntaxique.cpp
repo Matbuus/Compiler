@@ -5,9 +5,8 @@
 #include <iostream>
 #include <stack>
 #include <fstream>
-#include <stdlib.h>
 #include <algorithm>
-#include <cstring>
+#include <string>
 /*
  TO DO : TESTER SUR LA GRAMMAIRE FOURNIE:
  FAIRE UNE ASSOCIATION STRING -> CHAR
@@ -154,17 +153,17 @@ int main()
     
     
     /*
-    // Verifications des types :
-    for(int i=0;i<table_de_symbole.size();i++){
-        if(table_de_symbole[i].ntype=="id")
-            cout<<"Nom : "<<table_de_symbole[i].nom<<" et type : "<<table_de_symbole[i].vtype<<endl;
-    }
-    //
-    for(int i=0;i<apparitionIds.size();i++){
-        cout<<" ID: "<<apparitionIds[i]<<endl;
-    }
-    
-    // TO-DO : SEMANTIQUE
+     // Verifications des types :
+     for(int i=0;i<table_de_symbole.size();i++){
+     if(table_de_symbole[i].ntype=="id")
+     cout<<"Nom : "<<table_de_symbole[i].nom<<" et type : "<<table_de_symbole[i].vtype<<endl;
+     }
+     //
+     for(int i=0;i<apparitionIds.size();i++){
+     cout<<" ID: "<<apparitionIds[i]<<endl;
+     }
+     
+     // TO-DO : SEMANTIQUE
      */
     return EXIT_SUCCESS;
     
@@ -331,7 +330,7 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
                     pile.push(TableM[x][a][0][kk]);
                     
                 }
-
+                
                 cout<<associationCS[x]<<" => ";
                 for(unsigned long i = 2 ; i<TableM[x][a][0].size();i++){
                     arbreSyntaxiqueC[x].push_back(TableM[x][a][0][i]);
@@ -364,7 +363,7 @@ string verification(string s){ //algo cours verif qu'un mot est accepté par la 
                 }
                 else if (declarations && associationCS[a]==";")
                     declarations = false;
-                    
+                
                 
             }
             else{
@@ -870,5 +869,4 @@ void trait(string mot_lu,ofstream& file2){
         }
     }
 }
-
 
