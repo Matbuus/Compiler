@@ -298,9 +298,9 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
     vector<string> messages;
     stack<char> pile;
     string ligne=getTransformed(s);
-    bool declarations = false;
+    int nbRepet = 0,nbRepetMax = code.size();
     int num_ligne_courante=1;
-    int once=0; // Pour n'ajouter la ligne de begin qu'une seule fois TO-FIX
+   // int once=0; // Pour n'ajouter la ligne de begin qu'une seule fois TO-FIX
     int numero_id_courant=-1;
     
     // apparitionsID[numero_id_courant] nous renseigne sur quel id on travaille actuellement, a utiliser semantique
@@ -310,6 +310,7 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
     pile.push(production[0][0]); // on empile l'axiome
     int i=0;
     while(true){
+        nbRepet++;
         while(pile.top()=='#'){
             pile.pop();
         }
@@ -321,6 +322,7 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
             num_ligne_courante++;
         // Fin de Mise a jour de la ligne courante
         
+        
         if(x=='$' && a=='$'){
             if(messages.empty())
                 messages.push_back("Code sans erreurs syntaxiques.\n");
@@ -328,7 +330,7 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
                 messages.push_back("Analyse terminée. Veuillez corriger les erreurs avant de continuer.\n\n");
             return messages;
         }
-        if(NTer[x] == false || x == '$'){
+        else if(NTer[x] == false || x == '$'){
             if(x==a){ // x = a
                 pile.pop(); // depiler x
                 i++; //avancer ps
@@ -355,23 +357,21 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
                     arbreSyntaxiqueS[associationCS[x]].push_back(associationCS[TableM[x][a][0][i]]);
                     nv+=TableM[x][a][0][i];
                     // Calcul du nbr d'id dans la declaration:
-                    if(declarations && associationCS[TableM[x][a][0][i]]=="id"){
-                        nbId++; // Nombre d'ids par ligne
+                    if(associationCS[TableM[x][a][0][i]]=="id"){
                         numero_id_courant++;
                     }
-                    else if(associationCS[TableM[x][a][0][i]]=="id")
-                        numero_id_courant++;
                 }
                 arbSyntaxiqueFinal.push_back(nv);
                 
                 // Mise a jour de la table de symboles :
                 
-                
             }
             else{
                 // Case vide dans la table..
                 erreurSyntaxique = true;
-                messages.push_back("Erreur syntaxique. Veuillez verifier la syntaxe de "+associationCS[a]+" a la ligne "+to_string(num_ligne_courante)+" ou verifier la presence du \";\" a la ligne "+to_string(num_ligne_courante-1)+" \n");
+                string erreur ="Erreur syntaxique. Veuillez verifier la syntaxe de "+associationCS[a]+" a la ligne "+to_string(num_ligne_courante)+" ou verifier la presence du \";\" a la ligne "+to_string(num_ligne_courante-1)+" \n";
+                if(find(messages.begin(), messages.end(), erreur) == messages.end())
+                    messages.push_back(erreur);
                 for(int ind = i;ind<ligne.size() && !b;ind++){
                     for(int kk=0;kk<follow[x].size() && !b ;kk++){
                         if(follow[x][kk]==ligne[ind]){
@@ -382,6 +382,10 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
                     }
                 }
             }
+        }
+        if(nbRepet>nbRepetMax){
+            erreurSyntaxique = true;
+            return messages;
         }
     }
     return messages;
