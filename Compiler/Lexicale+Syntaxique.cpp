@@ -62,12 +62,12 @@ typedef struct {
 
 vector< tds > table_de_symbole;
 vector<string> table_des_id ;
-
+string code;
 bool danscommentaire = false ;
 int nbligne = 1 ;
 int nbInsts=0,nbId=1,nbOp=0;
 vector<string> apparitionIds; // Ordre des appartitions des IDs ( A utiliser fel semantique )
-
+vector<string> arbSyntaxiqueFinal;
 // Prototypes :
 void findFollow(string&, char ch);
 void creerM();
@@ -94,84 +94,72 @@ bool is_func(string, ofstream& file2);
 void trait(string, ofstream& file2);
 void decomp(string mot_lu);
 void setType(string s,string ss);
-
-
+void analyseLexicale(string);
+void AfficheProds();
+void GenPremiersSuivants();
+void AfficheArbreSyntaxique();
+void majTypesIds();
 int main()
 {
-    // ANALYSE LEXICALE :
+    /* ************************************************************************************************* */
     
-    string lexical;
-    string code;
-    ifstream file("/Users/malekattia/Desktop/program_test.txt");
-    string mot_lu ;
-    ofstream file2("/Users/malekattia/Desktop/Compiler/outputLexical.txt");
-    while(file>>lexical){
-        decompos.clear();
-        if(containsOp(lexical) && !isOp(lexical)){
-            decomp(lexical);
-            for(int i=0;i<decompos.size();i++)
-                trait(decompos[i],file2);
-        }
-        else
-            trait(lexical,file2);
-    }
-    for(int i =0 ; i<table_de_symbole.size();i++){
-        cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
-    }
-    cout<<endl<<endl<<"*****\tTABLE DES IDs\t*****\n\n"<<endl;
-    for(int i =0 ; i<table_des_id.size();i++){
-        cout<<i<<"  "<<table_des_id[i]<<endl;
-    }
-    cout<<"\n\n****************\n\n\n";
-    file2.close();
-    ifstream file2read("/Users/malekattia/Desktop/Compiler/outputLexical.txt");
-    file2read>>code;
-    // FIN ANALYSE LEXICALE
-    
+    //Generer La grammaire
     GenGram();
+    // Fichier contenant le programme a analyser:
+    string nomFichier = "/Users/malekattia/Desktop/program_test.txt";
     
-    for(int i=0;i<production.size();i++){
-        cout<<"Production "<<i<<" :  "<<getOriginal(production[i])<<endl;
-    }
-    for(int i=0;i<production.size();i++){
-        NTer[production[i][0]]=true; // Pour differencier entre les terminaux et les NT
-    }
+    /* ************************************************************************************************* */
     
-    for(int i=0;i<production.size();i++){
-        for(int j=0;j<production[i].length();j++)
-            Find_FirstV2(firsts[production[i][j]], production[i][j]); // On remplit les tableaux des premiers pour chaque symbole
-        
-    }
-    follow[production[0][0]][0]='$'; // On met un $ pour l'axiome
-    follow[production[0][0]][1]='\0'; // rajouter \0
-    for(int i=0;i<limit;i++){
-        // On remplit les tableaux des suivants pour chaque symbole
-        findFollow(follow[production[i][0]], production[i][0]);
-    }
+    /* ANALYSE LEXICALE : */
+    
+    analyseLexicale(nomFichier);
+    // Affichage des productions, des premiers et des suivants et de la table M:
+    AfficheProds();
+    GenPremiersSuivants();
     AfficheFirsts();
     AfficheFollows();
     creerM();
     cout<<endl;
+    
+    /* FIN ANALYSE LEXICALE */
+    
+    /* ************************************************************************************************* */
+    
+    /* ANALYSE SYNTAXIQUE: */
+    
     vector<string> verif = verification(code);
+        // Affichage du resultat de l'analyse syntaxique
     for(int i=0;i<verif.size();i++)
         cout<<verif[i];
     
+    /* FIN ANALYSE SYNTAXIQUE */
     
-    /*
-     // Verifications des types :
-     for(int i=0;i<table_de_symbole.size();i++){
-     if(table_de_symbole[i].ntype=="id")
-     cout<<"Nom : "<<table_de_symbole[i].nom<<" et type : "<<table_de_symbole[i].vtype<<endl;
-     }
-     //
-     for(int i=0;i<apparitionIds.size();i++){
-     cout<<" ID: "<<apparitionIds[i]<<endl;
-     }
-     
-     // TO-DO : SEMANTIQUE
-     */
+    
+    /* ************************************************************************************************* */
+    
+    
+    /* ANALYSE SEMANTIQUE */
+    AfficheArbreSyntaxique();
+    majTypesIds();
+    // Affichage des types des vars: VERIF:
+    for(int i=0;i<table_de_symbole.size();i++){
+        if(table_de_symbole[i].ntype=="id")
+            cout<<"ID: "<<table_de_symbole[i].nom<<" a le type "<<table_de_symbole[i].vtype<<endl;
+    }
+    /* FIN ANALYSE SEMANTIQUE */
+    
+    /* ************************************************************************************************* */
+    
     return EXIT_SUCCESS;
     
+}
+
+// Affiche les productions de la grammaire :
+
+void AfficheProds(){
+    for(int i=0;i<production.size();i++){
+        cout<<"Production "<<i<<" :  "<<getOriginal(production[i])<<endl;
+    }
 }
 
 //Affiche les premiers;
@@ -303,7 +291,7 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
     bool declarations = false;
     int num_ligne_courante=1;
     int once=0; // Pour n'ajouter la ligne de begin qu'une seule fois TO-FIX
-    int intermediaire = 1,numero_id_courant=-1;
+    int numero_id_courant=-1;
     
     // apparitionsID[numero_id_courant] nous renseigne sur quel id on travaille actuellement, a utiliser semantique
     
@@ -311,7 +299,6 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
     pile.push('$'); // on empile $
     pile.push(production[0][0]); // on empile l'axiome
     int i=0;
-    cout<<"********\tArbre Syntaxique\t********\n"<<endl;
     while(true){
         while(pile.top()=='#'){
             pile.pop();
@@ -325,7 +312,6 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
         // Fin de Mise a jour de la ligne courante
         
         if(x=='$' && a=='$'){
-            cout<<"\n****************\n"<<endl;
             if(messages.empty())
                 messages.push_back("Code sans erreurs syntaxiques.\n");
             else
@@ -351,41 +337,23 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
                     pile.push(TableM[x][a][0][kk]);
                     
                 }
-                
-                cout<<associationCS[x]<<" => ";
+                string nv="";
+                nv=nv+x+"=>";
                 for(unsigned long i = 2 ; i<TableM[x][a][0].size();i++){
                     arbreSyntaxiqueC[x].push_back(TableM[x][a][0][i]);
                     arbreSyntaxiqueS[associationCS[x]].push_back(associationCS[TableM[x][a][0][i]]);
-                    cout<<associationCS[TableM[x][a][0][i]]<<" ";
+                    nv+=TableM[x][a][0][i];
                     // Calcul du nbr d'id dans la declaration:
                     if(declarations && associationCS[TableM[x][a][0][i]]=="id"){
-                        nbId++;
+                        nbId++; // Nombre d'ids par ligne
                         numero_id_courant++;
                     }
                     else if(associationCS[TableM[x][a][0][i]]=="id")
                         numero_id_courant++;
                 }
-                cout<<endl;
+                arbSyntaxiqueFinal.push_back(nv);
                 
                 // Mise a jour de la table de symboles :
-                
-                if(associationCS[a]=="var"){
-                    declarations = true;
-                }
-                else if(declarations && (associationCS[a]=="integer" || associationCS[a]=="char")){
-                    if(associationCS[a] == "char"){
-                        for(int i=intermediaire;i<intermediaire+nbId-1;i++)
-                            setType(table_des_id[i], "char"); // Donner a chaque ID son type
-                    }
-                    else{
-                        for(int i=intermediaire;i<intermediaire+nbId-1;i++)
-                            setType(table_des_id[i], "integer");// Donner a chaque ID son type
-                    }
-                    intermediaire=intermediaire+nbId-1;
-                    nbId=1;
-                }
-                else if (declarations && associationCS[a]==";")
-                    declarations = false; // Fin des declarations
                 
                 
             }
@@ -473,6 +441,18 @@ void findFollow(string& array, char ch){
                     Array_ManipulationV2(follow[ch], follow[production[count][0]][kk]);
             }
         }
+    }
+}
+// Generer les premiers et les suivants:
+void GenPremiersSuivants(){
+    for(int i=0;i<production.size();i++){
+        for(int j=0;j<production[i].length();j++)
+            Find_FirstV2(firsts[production[i][j]], production[i][j]); // On remplit les tableaux des premiers pour chaque symbole
+    }
+    
+    for(int i=0;i<limit;i++){
+        // On remplit les tableaux des suivants pour chaque symbole
+        findFollow(follow[production[i][0]], production[i][0]);
     }
 }
 //is Op
@@ -649,7 +629,13 @@ void GenGram(){
     mot_lu="F=#";
     addProd(mot_lu);
     limit=nbProds;
-    
+    // Marquer les non terminaux;
+    for(int i=0;i<production.size();i++){
+        NTer[production[i][0]]=true; // Pour differencier entre les terminaux et les NT
+    }
+    // Suivants:
+    follow[production[0][0]][0]='$'; // On met un $ pour l'axiome
+    follow[production[0][0]][1]='\0'; // rajouter \0
 }
 /*
  void arbre(string s){
@@ -901,4 +887,77 @@ void trait(string mot_lu,ofstream& file2){
         }
     }
 }
+void analyseLexicale(string nomFichier){
+    
+    string lexical;
+    ifstream file(nomFichier);
+    string mot_lu ;
+    ofstream file2("/Users/malekattia/Desktop/Compiler/outputLexical.txt");
+    while(file>>lexical){
+        decompos.clear();
+        if(containsOp(lexical) && !isOp(lexical)){
+            decomp(lexical);
+            for(int i=0;i<decompos.size();i++)
+                trait(decompos[i],file2);
+        }
+        else
+            trait(lexical,file2);
+    }
+    for(int i =0 ; i<table_de_symbole.size();i++){
+        cout<<table_de_symbole[i].nom<<" "<<table_de_symbole[i].ntype<<endl;
+    }
+    cout<<endl<<endl<<"*****\tTABLE DES IDs\t*****\n\n"<<endl;
+    for(int i =0 ; i<table_des_id.size();i++){
+        cout<<i<<"  "<<table_des_id[i]<<endl;
+    }
+    cout<<"\n\n****************\n\n\n";
+    file2.close();
+    ifstream file2read("/Users/malekattia/Desktop/Compiler/outputLexical.txt");
+    file2read>>code;
+}
+// Affichage de l'arbre syntaxique
+void AfficheArbreSyntaxique(){
+    cout<<"\n\n*****\tARBRE SYNTAXIQUE\t*****\n\n\n";
+    for(int i=0;i<arbSyntaxiqueFinal.size();i++){
+        for(int j=0;j<arbSyntaxiqueFinal[i].size();j++){
+            if(j!=1 && j!=2)
+                cout<<" "<<associationCS[arbSyntaxiqueFinal[i][j]];
+            else cout<<arbSyntaxiqueFinal[i][j];
+        }
+    cout<<endl;
+    }
+    cout<<"\n\n\n*****************\n\n";
+}
+// Mettre a jour les types des ids dans la table des symboles :
 
+void majTypesIds(){
+    int nbi=1;
+    bool declarations = false;
+    int intermediaire = 1;
+    for(int i=0;i<arbSyntaxiqueFinal.size();i++){
+        for(int j=0;j<arbSyntaxiqueFinal[i].size();j++){
+            if(declarations && associationCS[arbSyntaxiqueFinal[i][j]]=="id"){
+                nbi++; // Nombre d'ids par ligne
+            }
+            char a =arbSyntaxiqueFinal[i][j];
+            if(associationCS[a]=="var")
+                declarations = true; // Debut des declarations
+            
+            else if(declarations && (associationCS[a]=="integer" || associationCS[a]=="char")){
+                if(associationCS[a] == "char"){
+                    for(int i=intermediaire;i<intermediaire+nbi-1;i++)
+                        setType(table_des_id[i], "char"); // Donner a chaque ID son type
+                }
+                else{
+                    for(int i=intermediaire;i<intermediaire+nbi-1;i++)
+                        setType(table_des_id[i], "integer");// Donner a chaque ID son type
+                }
+                intermediaire=intermediaire+nbi-1;
+                nbi=1;
+            }
+            else if (declarations && associationCS[a]=="begin")
+                declarations = false; // Fin des declarations
+            // Fin Maj Table des symboles
+        }
+    }
+}
