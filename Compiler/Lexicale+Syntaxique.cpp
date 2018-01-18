@@ -36,6 +36,7 @@ string all[]={
     ,"EXP_SIMPLE","EXP","TERME","FACTEUR","E","V","I","F","D","A","B","P","C"
 };
 int nbProds=0;
+bool erreurSyntaxique = false;
 vector<string> grammaire;
 map <string,char> associationSC;
 map <char,string> associationCS;
@@ -68,7 +69,9 @@ int nbligne = 1 ;
 int nbInsts=0,nbId=1,nbOp=0;
 vector<string> apparitionIds; // Ordre des appartitions des IDs ( A utiliser fel semantique )
 vector<string> arbSyntaxiqueFinal;
+
 // Prototypes :
+
 void findFollow(string&, char ch);
 void creerM();
 void AfficheFirsts();
@@ -132,6 +135,9 @@ int main()
     for(int i=0;i<verif.size();i++)
         cout<<verif[i];
     
+    if(erreurSyntaxique) // Quitter en cas d'erreur syntaxique
+        return EXIT_FAILURE;
+    
     /* FIN ANALYSE SYNTAXIQUE */
     
     
@@ -146,6 +152,10 @@ int main()
         if(table_de_symbole[i].ntype=="id")
             cout<<"ID: "<<table_de_symbole[i].nom<<" a le type "<<table_de_symbole[i].vtype<<endl;
     }
+    
+    // TO COMPLETE
+    
+    
     /* FIN ANALYSE SEMANTIQUE */
     
     /* ************************************************************************************************* */
@@ -315,7 +325,7 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
             if(messages.empty())
                 messages.push_back("Code sans erreurs syntaxiques.\n");
             else
-                messages.push_back("Analyse terminée. Veuillez corriger les erreurs SVP.\n\n");
+                messages.push_back("Analyse terminée. Veuillez corriger les erreurs avant de continuer.\n\n");
             return messages;
         }
         if(NTer[x] == false || x == '$'){
@@ -324,8 +334,9 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
                 i++; //avancer ps
             }
             else{ // x!= a
+                erreurSyntaxique = true;
                 pile.pop();
-                string topush="Erreur. "+associationCS[x]+" manquant ligne "+to_string(num_ligne_courante)+"\n";
+                string topush="Erreur syntaxique. "+associationCS[x]+" manquant ligne "+to_string(num_ligne_courante)+"\n";
                 messages.push_back(topush);
             }
         }
@@ -359,7 +370,8 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
             }
             else{
                 // Case vide dans la table..
-                messages.push_back("Erreur. Veuillez verifier la syntaxe de "+associationCS[a]+" a la ligne "+to_string(num_ligne_courante)+" ou verifier la presence du \";\" a la ligne "+to_string(num_ligne_courante-1)+" \n");
+                erreurSyntaxique = true;
+                messages.push_back("Erreur syntaxique. Veuillez verifier la syntaxe de "+associationCS[a]+" a la ligne "+to_string(num_ligne_courante)+" ou verifier la presence du \";\" a la ligne "+to_string(num_ligne_courante-1)+" \n");
                 for(int ind = i;ind<ligne.size() && !b;ind++){
                     for(int kk=0;kk<follow[x].size() && !b ;kk++){
                         if(follow[x][kk]==ligne[ind]){
