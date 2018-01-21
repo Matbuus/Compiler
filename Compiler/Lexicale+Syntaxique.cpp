@@ -147,7 +147,7 @@ int main()
     creerM();
     cout<<endl;
     vector<string> verif = verification(code);
-        // Affichage du resultat de l'analyse syntaxique
+    // Affichage du resultat de l'analyse syntaxique
     for(int i=0;i<verif.size();i++)
         cout<<verif[i];
     
@@ -321,7 +321,7 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
     string ligne=getTransformed(s);
     int nbRepet = 0,nbRepetMax = code.size();
     int num_ligne_courante=1;
-   // int once=0; // Pour n'ajouter la ligne de begin qu'une seule fois TO-FIX
+    // int once=0; // Pour n'ajouter la ligne de begin qu'une seule fois TO-FIX
     int numero_id_courant=-1;
     
     // apparitionsID[numero_id_courant] nous renseigne sur quel id on travaille actuellement, a utiliser semantique
@@ -969,7 +969,7 @@ void AfficheArbreSyntaxique(){
                 cout<<" "<<associationCS[arbSyntaxiqueFinal[i][j]];
             else cout<<arbSyntaxiqueFinal[i][j];
         }
-    cout<<endl;
+        cout<<endl;
     }
     cout<<"\n\n\n*****************\n\n";
 }
@@ -1020,37 +1020,37 @@ void getType(int indice){
             break;
         for(int j=0;j<arbSyntaxiqueFinal[indiceFinExp].size();j++){
             if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="id" || associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opmul"|| associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="oprel"|| associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opadd"|| associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="number")
-                {
-                    
-                    if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="id"){
-                        exp.push_back("id");
-                        exporiginale.push_back(apparitionIds[indId+nbe]);
-                        nbe++;
-                    }
-                    else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opmul"){
-                        exp.push_back("opmul");
-                        exporiginale.push_back(apparitionOpmul[indOpmul+nbm]);
-                        nbm++;
-                    }
-                    else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opadd"){
-                        exp.push_back(apparitionOpadd[indOpadd+nba]);
-                        exporiginale.push_back(apparitionOpadd[indOpadd+nba]);
-                        nba++;
-                    }
-                    else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="oprel"){
-                        exp.push_back(apparitionOprel[indOprel+nbr]);
-                        exporiginale.push_back(apparitionOprel[indOprel+nbr]);
-                        nbr++;
-                    }
-                    else {
-                        exp.push_back(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]);
-                        exporiginale.push_back(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]);
-                        
-                    }
-                    
-                    
-                    }
+            {
+                
+                if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="id"){
+                    exp.push_back("id");
+                    exporiginale.push_back(apparitionIds[indId+nbe]);
+                    nbe++;
                 }
+                else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opmul"){
+                    exp.push_back("opmul");
+                    exporiginale.push_back(apparitionOpmul[indOpmul+nbm]);
+                    nbm++;
+                }
+                else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opadd"){
+                    exp.push_back(apparitionOpadd[indOpadd+nba]);
+                    exporiginale.push_back(apparitionOpadd[indOpadd+nba]);
+                    nba++;
+                }
+                else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="oprel"){
+                    exp.push_back(apparitionOprel[indOprel+nbr]);
+                    exporiginale.push_back(apparitionOprel[indOprel+nbr]);
+                    nbr++;
+                }
+                else {
+                    exp.push_back(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]);
+                    exporiginale.push_back(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]);
+                    
+                }
+                
+                
+            }
+        }
         
     }
 }
@@ -1092,7 +1092,7 @@ void controleDeType(){
             
             
             // FIN INCREMENTATION DES INDICES ;
-
+            
             if(associationCS[arbSyntaxiqueFinal[i][j-1]]!="oprel" && associationCS[arbSyntaxiqueFinal[i][j-1]]!="("  && associationCS[arbSyntaxiqueFinal[i][j]]=="EXP_SIMPLE"){
                 if(associationCS[arbSyntaxiqueFinal[i][j-1]]==":="){
                     // Si c'est une affectation, le type a verifier est celui de la partie gauche de l'affectation
@@ -1111,54 +1111,55 @@ void controleDeType(){
                 
                 // generation de l'expression
                 if(!erreur){
-                getType(i+1);
-                if(!affectation){
-                // Si ce n'est pas une affectation, le type a verifier est soit celui du premier id présent dans l'exp
-                typeaverif = getTypeid(apparitionIds[indId]);
-                // ou "entier" si il y a un nombre entier dans l'expression
-                if(find(exp.begin(), exp.end(), "number") != exp.end())
-                    typeaverif = 0;
+                    getType(i+1);
+                    if(!affectation){
+                        // Si ce n'est pas une affectation, le type a verifier est soit celui du premier id présent dans l'exp
+                        typeaverif = getTypeid(apparitionIds[indId]);
+                        // ou "entier" si il y a un nombre entier dans l'expression
+                        if(find(exp.begin(), exp.end(), "number") != exp.end())
+                            typeaverif = 0;
+                    }
+                    
+                    // on parcourt l'expression et on compare chaque id avec le type a verifier
+                    for(int kkk=0;kkk<exp.size();kkk+=2){
+                        nbe++;
+                        if(exp[kkk]=="id"){ // On cherche l'id
+                            //cout<<" TYPE A VERIF = "<<typeaverif<<" et on a type de "<<apparitionIds[indId+nbe]<<" = "<<getTypeid(apparitionIds[indId+nbe])<<endl;
+                            if(getTypeid(apparitionIds[indId+nbe]) == 2){
+                                cout<<"\nErreur de type, la variable "<<apparitionIds[indId+nbe]<<" est non declarée."<<endl;
+                                cout<<"\n***************\n";
+                                erreur=true;
+                            }
+                            if(getTypeid(apparitionIds[indId+nbe]) != typeaverif){
+                                erreur=true;
+                                cout<<"\nErreur semantique dans l'expression :"<<endl;
+                                for(int l=0;l<exporiginale.size();l++)
+                                    cout<<exporiginale[l]<<" ";
+                                cout<<"\nVerifiez le type de la variable "<<apparitionIds[indId+nbe]<<". Elle doit etre du type: ";
+                                typeaverif? cout<<"caractere.\n":cout<<"entier.\n";
+                                cout<<"\n***************\n";
+                                
+                            }
+                        }
+                    }
+                    nbe=-1;
+                    /*
+                     if(!erreur){
+                     cout<<"\nL'expression :\n";
+                     for(int l=0;l<exporiginale.size();l++)
+                     cout<<exporiginale[l]<<" ";
+                     cout<<"\nest semantiquement correcte\n";
+                     }*/
+                    exporiginale.clear();
                 }
                 
-                // on parcourt l'expression et on compare chaque id avec le type a verifier
-                for(int kkk=0;kkk<exp.size();kkk+=2){
-                    nbe++;
-                    if(exp[kkk]=="id"){ // On cherche l'id
-                        //cout<<" TYPE A VERIF = "<<typeaverif<<" et on a type de "<<apparitionIds[indId+nbe]<<" = "<<getTypeid(apparitionIds[indId+nbe])<<endl;
-                        if(getTypeid(apparitionIds[indId+nbe]) == 2){
-                             cout<<"\nErreur de type, la variable "<<apparitionIds[indId+nbe]<<" est non declarée."<<endl;
-                            cout<<"\n***************\n";
-                            erreur=true;
-                        }
-                        if(getTypeid(apparitionIds[indId+nbe]) != typeaverif){
-                            erreur=true;
-                            cout<<"\nErreur semantique dans l'expression :"<<endl;
-                            for(int l=0;l<exporiginale.size();l++)
-                                cout<<exporiginale[l]<<" ";
-                            cout<<"\nVerifiez le type de la variable "<<apparitionIds[indId+nbe]<<".\n"<<endl;
-                            cout<<"\n***************\n";
-                        
-                    }
-                }
-            }
-                nbe=-1;
-                    /*
-                if(!erreur){
-                cout<<"\nL'expression :\n";
-                for(int l=0;l<exporiginale.size();l++)
-                    cout<<exporiginale[l]<<" ";
-                cout<<"\nest semantiquement correcte\n";
-                }*/
-                exporiginale.clear();
-                }
-         
-        } // Fin if EXP
+            } // Fin if EXP
             if(associationCS[arbSyntaxiqueFinal[i][j]]=="writeln" || associationCS[arbSyntaxiqueFinal[i][j]]=="readln" || associationCS[arbSyntaxiqueFinal[i][j]]=="read" || associationCS[arbSyntaxiqueFinal[i][j]]=="write"){
                 if(getTypeid(apparitionIds[indId]) ==2){
                     cout<<"\nErreur lors du read/write, la variable "<<apparitionIds[indId]<<" est non déclarée.\n";
                     cout<<"\n***************\n";
                 }
             }
+        }
     }
-}
 }
