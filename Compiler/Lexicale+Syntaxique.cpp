@@ -748,7 +748,6 @@ bool containsOp(string mot_lu){
 void decomp(string mot_lu){
     size_t found;
     for(int i=0;i<21;i++){
-        cout<<mot_lu<<endl;
         if((found = mot_lu.find(ops[i])) != string::npos){
             if(mot_lu.substr(0,found)!= "")
                 decompos.push_back(mot_lu.substr(0,found));
