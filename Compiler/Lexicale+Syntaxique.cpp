@@ -30,10 +30,10 @@ string symb[]={":=",";",":",",","(",")","(*","*)"};
 string ops[]={"(*","*)","(",")","==","<=",">=","<>","<",">","+","-","||","/","%","&&",":=",";",":",",","*"};
 string all[]={
     /* Terminaux */
-    "(*","*)","(",")","==","<=","<","<>",">",">=","+","-","||","/","%","&&",":=",";",":",",","*","program","var","begin","end","if","then","else","while","do","integer","char","readln","writeln","write","read","id","#","opmul","opadd","oprel","number",
+    "(*","*)","(",")","==","<=","<","<>",">",">=",":=","+","-","||","/","%","&&",";",":",",","*","program","var","begin","end","if","then","else","while","do","integer","char","readln","writeln","write","read","id","#","opmul","opadd","oprel","number", //21 + $ = 22
     /* Non Terminaux */
     "LISTE_ID","TYPE","INST_COMPOSEE","LISTE_INST","INST","DCL"
-    ,"EXP_SIMPLE","EXP","TERME","FACTEUR","E","V","I","F","D","A","B","P","C"
+    ,"EXP_SIMPLE","EXP","TERME","FACTEUR","E","V","I","F","D","A","B","P","C" //19
 };
 int nbProds=0;
 bool erreurSyntaxique = false;
@@ -54,10 +54,14 @@ vector< string > deriv;
 string Axiome = "P";
 
 vector<string> decompos;
+enum type{
+    entier,caractère,erreur_type
+};
+
 typedef struct {
     string nom ;
     string ntype ;
-    int vtype ; // 0 : integer   1 : char
+    type vtype ; // 0 : integer   1 : char
     int valeur ;
 }tds ;
 
@@ -68,7 +72,12 @@ bool danscommentaire = false ;
 int nbligne = 1 ;
 int nbInsts=0,nbId=1,nbOp=0;
 vector<string> apparitionIds; // Ordre des appartitions des IDs ( A utiliser fel semantique )
+vector<string> apparitionOprel;
+vector<string> apparitionOpmul;
+vector<string> apparitionOpadd;
 vector<string> arbSyntaxiqueFinal;
+
+
 
 // Prototypes :
 
@@ -102,6 +111,13 @@ void AfficheProds();
 void GenPremiersSuivants();
 void AfficheArbreSyntaxique();
 void majTypesIds();
+void getType(int);
+type getTypeid(string);
+void controleDeType();
+
+
+
+
 int main()
 {
     /* ************************************************************************************************* */
@@ -117,12 +133,6 @@ int main()
     
     analyseLexicale(nomFichier);
     // Affichage des productions, des premiers et des suivants et de la table M:
-    AfficheProds();
-    GenPremiersSuivants();
-    AfficheFirsts();
-    AfficheFollows();
-    creerM();
-    cout<<endl;
     
     /* FIN ANALYSE LEXICALE */
     
@@ -130,6 +140,12 @@ int main()
     
     /* ANALYSE SYNTAXIQUE: */
     
+    AfficheProds();
+    GenPremiersSuivants();
+    AfficheFirsts();
+    AfficheFollows();
+    creerM();
+    cout<<endl;
     vector<string> verif = verification(code);
         // Affichage du resultat de l'analyse syntaxique
     for(int i=0;i<verif.size();i++)
@@ -148,13 +164,15 @@ int main()
     AfficheArbreSyntaxique();
     majTypesIds();
     // Affichage des types des vars: VERIF:
+    cout<<"\n\n*******\tRESULTAT DE L'ANALYSE SEMANTIQUE\t********\n\n";
     for(int i=0;i<table_de_symbole.size();i++){
         if(table_de_symbole[i].ntype=="id")
             cout<<"ID: "<<table_de_symbole[i].nom<<" a le type "<<table_de_symbole[i].vtype<<endl;
     }
-    
+    cout<<"\n\n***************\n\n";
     // TO COMPLETE
     
+    controleDeType();
     
     /* FIN ANALYSE SEMANTIQUE */
     
@@ -267,6 +285,7 @@ vector<char> firstProd(string ch){
 // Creation de la table M
 
 void creerM(){ // Algo de classe
+    int nbooo = 0;
     // Construction + Affichage de la table d'analyse M :
     cout<<"\n\n\n********\tTABLE M\t********\n\n\n";
     for(int i=0;i<production.size();i++){
@@ -275,6 +294,7 @@ void creerM(){ // Algo de classe
         for(int jj=0;jj<premiers.size();jj++){
             //Parcours des premiers 1 par 1 et on applique l'algo 1)
             if(premiers[jj]!='#'){
+                nbooo++;
                 cout<<"M [ "<<associationCS[production[i][0]]<<" , "<<associationCS[premiers[jj]]<<" ]  : " << getOriginal(production[i]) << endl;
                 TableM[production[i][0]][premiers[jj]].push_back(production[i]);
             }
@@ -286,6 +306,7 @@ void creerM(){ // Algo de classe
              aux suivants de A
              */
             for(int kk = 0;follow[production[i][0]][kk]!='\0';kk++){
+                nbooo++;
                 cout<<"M [ "<<associationCS[production[i][0]]<<" , "<<associationCS[follow[production[i][0]][kk]]<<" ]  : " << getOriginal(production[i]) << endl;
                 TableM[production[i][0]][follow[production[i][0]][kk]].push_back(production[i]);
             }
@@ -453,6 +474,8 @@ void findFollow(string& array, char ch){
                 // Ch est trouvé en fin de chaîne ( forme E -> aCH )
                 //Ajout des suivants du parent
                 findFollow(follow[production[count][0]], production[count][0]);
+                if(count == 0)
+                    Array_ManipulationV2(follow[ch], '$');
                 for(int kk=0;kk<follow[production[count][0]].size();kk++)
                     Array_ManipulationV2(follow[ch], follow[production[count][0]][kk]);
             }
@@ -481,7 +504,7 @@ bool isOp(string mot_lu){
 // verifier que le mot contient un op
 
 bool containsSymb(string mot_lu){
-    for(int i=0;i<37;i++){
+    for(int i=0;i<61;i++){
         if(size_t found = mot_lu.find(all[i]) != string::npos)
             return true;
     }
@@ -672,9 +695,9 @@ void setType(string s,string ss){
     for(int i=0 ; i<table_de_symbole.size();i++){
         if(table_de_symbole[i].nom==s){
             if(ss=="integer")
-                table_de_symbole[i].vtype = 0;
+                table_de_symbole[i].vtype = entier;
             else
-                table_de_symbole[i].vtype = 1;
+                table_de_symbole[i].vtype = caractère;
         }
         
     }
@@ -703,7 +726,7 @@ void symb_table_insert(string s , string v){
     tds element ;
     element.nom = s;
     element.ntype =v;
-    element.vtype = -1 ;
+    element.vtype = erreur_type ;
     element.valeur = 0 ;
     table_de_symbole.push_back(element);
     //}
@@ -725,6 +748,7 @@ bool containsOp(string mot_lu){
 void decomp(string mot_lu){
     size_t found;
     for(int i=0;i<21;i++){
+        cout<<mot_lu<<endl;
         if((found = mot_lu.find(ops[i])) != string::npos){
             if(mot_lu.substr(0,found)!= "")
                 decompos.push_back(mot_lu.substr(0,found));
@@ -761,6 +785,7 @@ bool is_oprel(string s,ofstream& file2){
         if (s == oprel[i]){
             symb_table_insert(s,"oprel");
             file2<<"oprel";
+            apparitionOprel.push_back(s);
             return true ;
         }
     }
@@ -801,6 +826,7 @@ bool is_opadd(string s ,ofstream& file2){
         if (s == opadd[i]){
             symb_table_insert(s,"opadd");
             file2<<"opadd";
+            apparitionOpadd.push_back(s);
             return true ;
         }
     }
@@ -814,6 +840,7 @@ bool is_opmul(string s,ofstream& file2){
         if (s == opmul[i]){
             symb_table_insert(s,"opmul");
             file2<<"opmul";
+            apparitionOpmul.push_back(s);
             return true ;
         }
     }
@@ -903,6 +930,8 @@ void trait(string mot_lu,ofstream& file2){
         }
     }
 }
+// l'analyse lexicale:
+
 void analyseLexicale(string nomFichier){
     
     string lexical;
@@ -976,4 +1005,160 @@ void majTypesIds(){
             // Fin Maj Table des symboles
         }
     }
+}
+
+
+int indId = 0,indOprel=0,indOpmul=0,indOpadd=0;
+vector<string> exp;
+vector<string> exporiginale;
+void getType(int indice){
+    int indiceFinExp=0;
+    int nbe=0,nba=0,nbm=0,nbr=0;
+    exp.clear();
+    for(indiceFinExp=indice;indiceFinExp<arbSyntaxiqueFinal.size();indiceFinExp++){
+        if(associationCS[arbSyntaxiqueFinal[indiceFinExp][0]] == "V" || associationCS[arbSyntaxiqueFinal[indiceFinExp][0]] == "I")
+            break;
+        for(int j=0;j<arbSyntaxiqueFinal[indiceFinExp].size();j++){
+            if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="id" || associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opmul"|| associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="oprel"|| associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opadd"|| associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="number")
+                {
+                    
+                    if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="id"){
+                        exp.push_back("id");
+                        exporiginale.push_back(apparitionIds[indId+nbe]);
+                        nbe++;
+                    }
+                    else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opmul"){
+                        exp.push_back("opmul");
+                        exporiginale.push_back(apparitionOpmul[indOpmul+nbm]);
+                        nbm++;
+                    }
+                    else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="opadd"){
+                        exp.push_back(apparitionOpadd[indOpadd+nba]);
+                        exporiginale.push_back(apparitionOpadd[indOpadd+nba]);
+                        nba++;
+                    }
+                    else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="oprel"){
+                        exp.push_back(apparitionOprel[indOprel+nbr]);
+                        exporiginale.push_back(apparitionOprel[indOprel+nbr]);
+                        nbr++;
+                    }
+                    else {
+                        exp.push_back(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]);
+                        exporiginale.push_back(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]);
+                        
+                    }
+                    
+                    
+                    }
+                }
+        
+    }
+}
+
+type getTypeid(string ob){
+    for(int i=0;i<table_de_symbole.size();i++)
+        if(table_de_symbole[i].nom==ob)
+            return table_de_symbole[i].vtype;
+    
+    return erreur_type;
+}
+
+void controleDeType(){
+    int nbe=-1;
+    int typeaverif = -1;
+    bool erreur = false,affectation=false;
+    for(int i=0;i<arbSyntaxiqueFinal.size();i++){
+        affectation=false;
+        erreur = false;
+        for(int j=3;j<arbSyntaxiqueFinal[i].size();j++){
+            // INCREMENTATION DES INDICES ;
+            
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="id"){
+                indId++; // Pour savoir sur quel id on travaille
+            }
+            
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="+" || associationCS[arbSyntaxiqueFinal[i][j]]=="-" || associationCS[arbSyntaxiqueFinal[i][j]]=="||"){
+                indOpadd++; // Pour savoir sur quel opadd on travaille
+            }
+            
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="*" || associationCS[arbSyntaxiqueFinal[i][j]]=="/" || associationCS[arbSyntaxiqueFinal[i][j]]=="&&"|| associationCS[arbSyntaxiqueFinal[i][j]]=="%"){
+                cout<<associationCS[arbSyntaxiqueFinal[i][j]]<<" -> on inc" <<endl;
+                indOpmul++; // Pour savoir sur quel opadd on travaille
+            }
+            
+            if(associationCS[arbSyntaxiqueFinal[i][j]]==">" || associationCS[arbSyntaxiqueFinal[i][j]]=="<" || associationCS[arbSyntaxiqueFinal[i][j]]==">="|| associationCS[arbSyntaxiqueFinal[i][j]]=="<="|| associationCS[arbSyntaxiqueFinal[i][j]]=="<>"|| associationCS[arbSyntaxiqueFinal[i][j]]=="=="){
+                indOprel++; // Pour savoir sur quel opadd on travaille
+            }
+            
+            
+            // FIN INCREMENTATION DES INDICES ;
+
+            if(associationCS[arbSyntaxiqueFinal[i][j-1]]!="oprel" && associationCS[arbSyntaxiqueFinal[i][j-1]]!="("  && associationCS[arbSyntaxiqueFinal[i][j]]=="EXP_SIMPLE"){
+                if(associationCS[arbSyntaxiqueFinal[i][j-1]]==":="){
+                    // Si c'est une affectation, le type a verifier est celui de la partie gauche de l'affectation
+                    affectation=true;
+                    typeaverif=getTypeid(apparitionIds[indId-1]);
+                    exporiginale.push_back(apparitionIds[indId-1]);
+                    exporiginale.push_back(":=");
+                }
+                
+                if(typeaverif==2){
+                    // Erreur de type : Type = 2
+                    cout<<"\nErreur de type, la variable "<<apparitionIds[indId-1]<<" est non declarée."<<endl;
+                    cout<<"\n***************\n";
+                    erreur=true;
+                }
+                
+                // generation de l'expression
+                if(!erreur){
+                getType(i+1);
+                if(!affectation){
+                // Si ce n'est pas une affectation, le type a verifier est soit celui du premier id présent dans l'exp
+                typeaverif = getTypeid(apparitionIds[indId]);
+                // ou "entier" si il y a un nombre entier dans l'expression
+                if(find(exp.begin(), exp.end(), "number") != exp.end())
+                    typeaverif = 0;
+                }
+                
+                // on parcourt l'expression et on compare chaque id avec le type a verifier
+                for(int kkk=0;kkk<exp.size();kkk+=2){
+                    nbe++;
+                    if(exp[kkk]=="id"){ // On cherche l'id
+                        //cout<<" TYPE A VERIF = "<<typeaverif<<" et on a type de "<<apparitionIds[indId+nbe]<<" = "<<getTypeid(apparitionIds[indId+nbe])<<endl;
+                        if(getTypeid(apparitionIds[indId+nbe]) == 2){
+                             cout<<"\nErreur de type, la variable "<<apparitionIds[indId+nbe]<<" est non declarée."<<endl;
+                            cout<<"\n***************\n";
+                            erreur=true;
+                        }
+                        if(getTypeid(apparitionIds[indId+nbe]) != typeaverif){
+                            erreur=true;
+                            cout<<"\nErreur semantique dans l'expression :"<<endl;
+                            for(int l=0;l<exporiginale.size();l++)
+                                cout<<exporiginale[l]<<" ";
+                            cout<<"\nVerifiez le type de la variable "<<apparitionIds[indId+nbe]<<".\n"<<endl;
+                            cout<<"\n***************\n";
+                        
+                    }
+                }
+            }
+                nbe=-1;
+                    /*
+                if(!erreur){
+                cout<<"\nL'expression :\n";
+                for(int l=0;l<exporiginale.size();l++)
+                    cout<<exporiginale[l]<<" ";
+                cout<<"\nest semantiquement correcte\n";
+                }*/
+                exporiginale.clear();
+                }
+         
+        } // Fin if EXP
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="writeln" || associationCS[arbSyntaxiqueFinal[i][j]]=="readln" || associationCS[arbSyntaxiqueFinal[i][j]]=="read" || associationCS[arbSyntaxiqueFinal[i][j]]=="write"){
+                if(getTypeid(apparitionIds[indId]) ==2){
+                    cout<<"\nErreur lors du read/write, la variable "<<apparitionIds[indId]<<" est non déclarée.\n";
+                    cout<<"\n***************\n";
+                }
+            }
+    }
+}
 }
