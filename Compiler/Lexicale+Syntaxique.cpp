@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <cstring>
 /*
- TO DO : TESTER SUR LA GRAMMAIRE FOURNIE:
+ TO DO : TESTER SUR LA GRAMMAIRE FOURNIE: 
  FAIRE UNE ASSOCIATION STRING -> CHAR
  FAIRE UNE ASSOCIATION CHAR -> STRING
  TESTER SUR LE PROGRAMME ECRIT
@@ -26,11 +26,11 @@ string functions[]={"read","readln","write","writeln"};
 string oprel[]={"==","<=","<>",">=","<",">"};
 string opadd[]={"+","-","||"};
 string opmul[]={"*","/","%","&&"};
-string symb[]={":=",";",":",",","(",")","(*","*)"};
-string ops[]={"(*","*)","(",")","==","<=",">=","<>","<",">","+","-","||","/","%","&&",":=",";",":",",","*"};
+string symb[]={":=",";",":",",","(",")","(*","*)","."};
+string ops[]={"(*","*)","(",")",":=","==","<=",">=","<>","<",">","*","-","||","/","&&",":",",","+","%",";","."};
 string all[]={
     /* Terminaux */
-    "(*","*)","(",")","==","<=","<","<>",">",">=",":=","+","-","||","/","%","&&",";",":",",","*","program","var","begin","end","if","then","else","while","do","integer","char","readln","writeln","write","read","id","#","opmul","opadd","oprel","number", //21 + $ = 22
+    "(*","*)","(",")","==","<=","<","<>",">",">=",":=","+","-","||","/","%","&&",";",":",",","*","program","var","begin","end","if","then","else","while","do","integer","char","readln","writeln","write","read","id","#","opmul","opadd","oprel","number",".", //21 + $ = 22
     /* Non Terminaux */
     "LISTE_ID","TYPE","INST_COMPOSEE","LISTE_INST","INST","DCL"
     ,"EXP_SIMPLE","EXP","TERME","FACTEUR","E","V","I","F","D","A","B","P","C" //19
@@ -126,7 +126,6 @@ int main()
     GenGram();
     // Fichier contenant le programme a analyser:
     string nomFichier = "/Users/malekattia/Desktop/program_test.txt";
-    
     /* ************************************************************************************************* */
     
     /* ANALYSE LEXICALE : */
@@ -496,7 +495,7 @@ void GenPremiersSuivants(){
 }
 //is Op
 bool isOp(string mot_lu){
-    for(int i=0;i<37;i++){
+    for(int i=0;i<42;i++){
         if(mot_lu == all[i])
             return true;}
     return false;
@@ -516,7 +515,8 @@ bool containsSymb(string mot_lu){
 void prod(string mot_lu){
     size_t found;
     while(true){
-        for(int i=0;i<59 ;i++){
+        for(int i=0;i<62 ;i++){
+            
             //on cherche les symboles 1 par 1
             if((found = mot_lu.find(all[i])) ==0){
                 if(mot_lu!=all[i]){
@@ -558,7 +558,7 @@ void addProd(string& mot){
             associationSC[all[i]]=a;
             associationCS[a]=all[i];
         }
-        if(i>41)
+        if(i>42)
             NTer[a]=true;
         a++;
     }
@@ -599,7 +599,7 @@ string getTransformed(string s){
 // Generation de la grammaire: A changer pr une autre grammaire:
 void GenGram(){
     string mot_lu="";
-    mot_lu="P=programid;DCLINST_COMPOSEE";
+    mot_lu="P=programid;DCLINST_COMPOSEE.";
     addProd(mot_lu);
     mot_lu="DCL=A";
     addProd(mot_lu);
@@ -736,7 +736,7 @@ void symb_table_insert(string s , string v){
 // verifier que le mot contient un op
 
 bool containsOp(string mot_lu){
-    for(int i=0;i<21;i++){
+    for(int i=0;i<22;i++){
         if(size_t found = mot_lu.find(ops[i]) != string::npos)
             return true;
     }
@@ -747,10 +747,14 @@ bool containsOp(string mot_lu){
 
 void decomp(string mot_lu){
     size_t found;
-    for(int i=0;i<21;i++){
+    for(int i=0;i<22;i++){
         if((found = mot_lu.find(ops[i])) != string::npos){
-            if(mot_lu.substr(0,found)!= "")
+            if(mot_lu.substr(0,found)!= ""){
+                if(containsOp(mot_lu.substr(0,found)))
+                    decomp(mot_lu.substr(0,found));
+                else
                 decompos.push_back(mot_lu.substr(0,found));
+            }
             decompos.push_back(ops[i]);
             if(containsOp(mot_lu.substr(found + ops[i].size())))
                 decomp(mot_lu.substr(found + ops[i].size()));
@@ -764,7 +768,7 @@ void decomp(string mot_lu){
     }
 }
 
-// Verifier si le mot est un mot cl»
+// Verifier si le mot est un mot cle
 
 bool is_key(string s ,ofstream& file2){
     for(int i = 0 ;i<9;i++){
@@ -794,7 +798,7 @@ bool is_oprel(string s,ofstream& file2){
 // Verifier si le mot est un symbole
 
 bool is_symb(string s,ofstream& file2){
-    for(int i =0 ; i<6 ; i++){
+    for(int i =0 ; i<9 ; i++){
         if (s == symb[i]){
             if(symb[i]==";")nbligne++ ;
             symb_table_insert(s,"symb");
