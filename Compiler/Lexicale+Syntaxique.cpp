@@ -112,7 +112,7 @@ void GenPremiersSuivants();
 void AfficheArbreSyntaxique();
 void majTypesIds();
 void getType(int);
-type getTypeid(string);
+
 void controleDeType();
 
 
