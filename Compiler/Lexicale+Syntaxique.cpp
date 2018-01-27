@@ -10,12 +10,16 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <cstring>
+
 /*
- TO DO : TESTER SUR LA GRAMMAIRE FOURNIE: 
- FAIRE UNE ASSOCIATION STRING -> CHAR
- FAIRE UNE ASSOCIATION CHAR -> STRING
- TESTER SUR LE PROGRAMME ECRIT
+ TO DO : TESTER SUR LA GRAMMAIRE FOURNIE: X
+ FAIRE UNE ASSOCIATION STRING -> CHAR X
+ FAIRE UNE ASSOCIATION CHAR -> STRING X
+ TESTER SUR LE PROGRAMME ECRIT X
+ SEMANTIQUE : X
+ GEN CODE INTERMEDIAIRE : ...
  */
+
 using namespace std;
 
 // Variables Globales :
@@ -37,6 +41,7 @@ string all[]={
 };
 int nbProds=0;
 bool erreurSyntaxique = false;
+ofstream file3("/Users/malekattia/Desktop/Compiler/codeIntermediaire.txt");
 vector<string> grammaire;
 map <string,char> associationSC;
 map <char,string> associationCS;
@@ -75,8 +80,9 @@ vector<string> apparitionIds; // Ordre des appartitions des IDs ( A utiliser fel
 vector<string> apparitionOprel;
 vector<string> apparitionOpmul;
 vector<string> apparitionOpadd;
+vector<string> apparitionNumber;
 vector<string> arbSyntaxiqueFinal;
-
+map<string,string> codeint;
 
 
 // Prototypes :
@@ -111,9 +117,12 @@ void AfficheProds();
 void GenPremiersSuivants();
 void AfficheArbreSyntaxique();
 void majTypesIds();
-void getType(int);
+void getExp(int);
 type getTypeid(string);
-void controleDeType();
+void Semantique();
+void initSynt();
+string getVarInt(string id);
+void affichageExp();
 
 
 
@@ -160,6 +169,7 @@ int main()
     
     
     /* ANALYSE SEMANTIQUE */
+    initSynt();
     AfficheArbreSyntaxique();
     majTypesIds();
     // Affichage des types des vars: VERIF:
@@ -169,9 +179,7 @@ int main()
             cout<<"ID: "<<table_de_symbole[i].nom<<" a le type "<<table_de_symbole[i].vtype<<endl;
     }
     cout<<"\n\n***************\n\n";
-    // TO COMPLETE
-    
-    controleDeType();
+    Semantique();
     
     /* FIN ANALYSE SEMANTIQUE */
     
@@ -180,6 +188,8 @@ int main()
     return EXIT_SUCCESS;
     
 }
+
+
 
 // Affiche les productions de la grammaire :
 
@@ -877,6 +887,7 @@ bool is_number(string s,ofstream& file2){
         }
     }
     symb_table_insert(s,"number");
+    apparitionNumber.push_back(s);
     file2<<"number";
     return true ;
 }
@@ -1010,14 +1021,22 @@ void majTypesIds(){
     }
 }
 
+/* Quelques variables utiles */
 
-int indId = 0,indOprel=0,indOpmul=0,indOpadd=0;
+int indId = 0,indOprel=0,indOpmul=0,indOpadd=0,indNumber=0;
 vector<string> exp;
 vector<string> exporiginale;
-void getType(int indice){
+
+/* ************************* */
+
+
+// Retourne l'expression originale qui débute à l'indice "indice" de l'arbre syntaxique
+
+void getExp(int indice){
     int indiceFinExp=0;
-    int nbe=0,nba=0,nbm=0,nbr=0;
+    int nbe=0,nba=0,nbm=0,nbr=0,nbn=0;
     exp.clear();
+    // Le but de cette methode est de "push" chaque element dans le tableau exporiginale
     for(indiceFinExp=indice;indiceFinExp<arbSyntaxiqueFinal.size();indiceFinExp++){
         if(associationCS[arbSyntaxiqueFinal[indiceFinExp][0]] == "V" || associationCS[arbSyntaxiqueFinal[indiceFinExp][0]] == "I")
             break;
@@ -1045,6 +1064,11 @@ void getType(int indice){
                     exporiginale.push_back(apparitionOprel[indOprel+nbr]);
                     nbr++;
                 }
+                else if(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]=="number"){
+                    exp.push_back(apparitionNumber[indNumber+nbn]);
+                    exporiginale.push_back(apparitionNumber[indNumber+nbn]);
+                    nbn++;
+                }
                 else {
                     exp.push_back(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]);
                     exporiginale.push_back(associationCS[arbSyntaxiqueFinal[indiceFinExp][j]]);
@@ -1058,6 +1082,8 @@ void getType(int indice){
     }
 }
 
+// Renvoie le type d'un id en utilisant son nom donné. Si l'id n'est pas présent dans la table des symboles, retourne une erreur
+
 type getTypeid(string ob){
     for(int i=0;i<table_de_symbole.size();i++)
         if(table_de_symbole[i].nom==ob)
@@ -1065,17 +1091,42 @@ type getTypeid(string ob){
     
     return erreur_type;
 }
+// Mise a jour de la valeur d'un id dans la table des symboles, utilisée pour savoir qu'une variable possède bel et bien
+// Une valeur avant d'être utilisée.
+void majVal(string ob){
+    for(int i=0;i<table_de_symbole.size();i++)
+        if(table_de_symbole[i].nom==ob){
+            table_de_symbole[i].valeur = 1;
+            return;}
+}
 
-void controleDeType(){
+// GetValeur
+
+int getVal(string ob){
+    for(int i=0;i<table_de_symbole.size();i++)
+        if(table_de_symbole[i].nom==ob){
+            return table_de_symbole[i].valeur;
+            
+        }
+    return 0;
+}
+void Semantique(){
     int nbe=-1;
     int typeaverif = -1;
-    bool erreur = false,affectation=false;
+    bool erreur = false,affectation=false,condition=false;
+    int sinon = 0;
     for(int i=0;i<arbSyntaxiqueFinal.size();i++){
         affectation=false;
         erreur = false;
         for(int j=3;j<arbSyntaxiqueFinal[i].size();j++){
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="begin"){
+                file3<<"debut\n\n"; // debut
+            }
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="if"){
+                file3<<"si "; // Condition
+                condition=true;
+            }
             // INCREMENTATION DES INDICES ;
-            
             if(associationCS[arbSyntaxiqueFinal[i][j]]=="id"){
                 indId++; // Pour savoir sur quel id on travaille
             }
@@ -1083,17 +1134,33 @@ void controleDeType(){
             if(associationCS[arbSyntaxiqueFinal[i][j]]=="+" || associationCS[arbSyntaxiqueFinal[i][j]]=="-" || associationCS[arbSyntaxiqueFinal[i][j]]=="||"){
                 indOpadd++; // Pour savoir sur quel opadd on travaille
             }
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="number"){
+                indNumber++; // Pour savoir sur quel nombre on travaille
+            }
             
             if(associationCS[arbSyntaxiqueFinal[i][j]]=="*" || associationCS[arbSyntaxiqueFinal[i][j]]=="/" || associationCS[arbSyntaxiqueFinal[i][j]]=="&&"|| associationCS[arbSyntaxiqueFinal[i][j]]=="%"){
                 cout<<associationCS[arbSyntaxiqueFinal[i][j]]<<" -> on inc" <<endl;
-                indOpmul++; // Pour savoir sur quel opadd on travaille
+                indOpmul++; // Pour savoir sur quel opmul on travaille
             }
             
             if(associationCS[arbSyntaxiqueFinal[i][j]]==">" || associationCS[arbSyntaxiqueFinal[i][j]]=="<" || associationCS[arbSyntaxiqueFinal[i][j]]==">="|| associationCS[arbSyntaxiqueFinal[i][j]]=="<="|| associationCS[arbSyntaxiqueFinal[i][j]]=="<>"|| associationCS[arbSyntaxiqueFinal[i][j]]=="=="){
-                indOprel++; // Pour savoir sur quel opadd on travaille
+                indOprel++; // Pour savoir sur quel oprel on travaille
             }
+            // Lecture lire,lireln
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="read" || associationCS[arbSyntaxiqueFinal[i][j]]=="readln"){
+                file3<<codeint[associationCS[arbSyntaxiqueFinal[i][j]]]<<" ("<<getVarInt(apparitionIds[indId])<<")"<<endl;
+                majVal(apparitionIds[indId]);
+            }
+            //Ecriture ecrire, ecrireln
             
-            
+            if(associationCS[arbSyntaxiqueFinal[i][j]]=="write" || associationCS[arbSyntaxiqueFinal[i][j]]=="writeln"){
+                if(getVal(apparitionIds[indId]) != 1 && getTypeid(apparitionIds[indId]) != 2){
+                      cout<<"Erreur ecriture, variable "<<getVarInt(apparitionIds[indId])<<" non initialisée.";
+                    cout<<"\n\n***************\n";
+                }
+                else
+                file3<<codeint[associationCS[arbSyntaxiqueFinal[i][j]]]<<" ("<<getVarInt(apparitionIds[indId])<<")"<<endl;
+            }
             // FIN INCREMENTATION DES INDICES ;
             
             if(associationCS[arbSyntaxiqueFinal[i][j-1]]!="oprel" && associationCS[arbSyntaxiqueFinal[i][j-1]]!="("  && associationCS[arbSyntaxiqueFinal[i][j]]=="EXP_SIMPLE"){
@@ -1114,7 +1181,7 @@ void controleDeType(){
                 
                 // generation de l'expression
                 if(!erreur){
-                    getType(i+1);
+                    getExp(i+1);
                     if(!affectation){
                         // Si ce n'est pas une affectation, le type a verifier est soit celui du premier id présent dans l'exp
                         typeaverif = getTypeid(apparitionIds[indId]);
@@ -1146,13 +1213,25 @@ void controleDeType(){
                         }
                     }
                     nbe=-1;
-                    /*
-                     if(!erreur){
-                     cout<<"\nL'expression :\n";
-                     for(int l=0;l<exporiginale.size();l++)
-                     cout<<exporiginale[l]<<" ";
-                     cout<<"\nest semantiquement correcte\n";
-                     }*/
+                    if(!erreur && !condition){
+                        affichageExp();
+                        if(sinon>0){
+                            file3<<"sinon\n";
+                            sinon--;}
+                    }
+                    else if(!erreur && condition){
+                        for(int l=0;l<exporiginale.size();l++){
+                            string ss = exporiginale[l];
+                            if(find(table_des_id.begin(),table_des_id.end(), ss)!=table_des_id.end())
+                                file3<<getVarInt(ss)<<" ";
+                            else
+                                file3<<exporiginale[l]<<" ";
+                        }
+                        file3<<"alors\n";
+                        sinon++;
+                        condition = false;
+                        
+                    }
                     exporiginale.clear();
                 }
                 
@@ -1165,4 +1244,78 @@ void controleDeType(){
             }
         }
     }
+    file3<<"\nfin"; // fin
+}
+
+
+// Initialisation du code intermediaire
+// Associer une chaine de caractère aux symboles de notre grammaire
+void initSynt(){
+    codeint["+"] = "add";
+    codeint["||"] = "or";
+    codeint["-"] = "sub";
+    codeint["&&"] = "and";
+    codeint["%"] = "mod";
+    codeint["/"] = "div";
+    codeint["*"] = "mul";
+    codeint["readln"] ="lireln";
+    codeint["read"] ="lire";
+    codeint["writeln"] ="ecrireln";
+    codeint["write"] ="ecrire";
+}
+// Avoir la variable associée a chaque id, si c'est une variable int ou un nombre, on retourne le nom sinon
+// On retourne $ + son indice dans la table des id
+string getVarInt(string id){
+    if(id[0]=='$' || id[0]=='0'|| id[0]=='1'|| id[0]=='2'|| id[0]=='3'|| id[0]=='4'|| id[0]=='5'|| id[0]=='6'|| id[0]=='7'|| id[0]=='8'|| id[0]=='9')
+        return id;
+    // Sinon si c'est un id
+    string s = "$";
+    int i;
+    for(i=1;i<table_des_id.size();i++)
+        if(table_des_id[i]==id)
+            break;
+    s+=to_string(i);
+    return s;
+}
+// Code intermediaire de l'expression
+void affichageExp(){
+    bool add = false, mul = false;
+    int indIntermediaire = table_des_id.size(),indmul=0,indadd=0;
+    while (exporiginale.size()>5) {
+        mul = false;
+        add = false;
+        for(int i=0;i<exporiginale.size();i++){
+            // Traiter les multiplications avant
+            if(exporiginale[i] == "*" ||exporiginale[i] == "&&" || exporiginale[i] == "%" ||exporiginale[i] == "/"){
+                mul = true; // On a trouvé un symbole de multiplication
+                indmul=i; // On enregistre son id
+            }
+        }
+            if(mul==true){
+                file3<<codeint[exporiginale[indmul]]<<" $"<<indIntermediaire<<" "<<getVarInt(exporiginale[indmul-1])<<" "<<getVarInt(exporiginale[indmul+1])<<" // creer une variable intermediaire $"<<indIntermediaire<<" qui contient  "<<exporiginale[indmul-1]<<exporiginale[indmul]<<exporiginale[indmul+1]<<endl; // Création de la varibale intermediaire + ecriture dans le fichier
+                exporiginale.erase(exporiginale.begin()+indmul-1,exporiginale.begin()+indmul+2); // On les enleve de l'expression
+                exporiginale.insert(exporiginale.begin()+indmul-1, "$"+to_string(indIntermediaire)); // On insere la variable intermediaire dans l'expression
+                indIntermediaire++; // On incremente la variable intermediaire
+                continue;
+            }
+        
+        /* MEME CHOSE POUR L ADDITION */
+        
+        for(int i=0;i<exporiginale.size();i++){
+            if(exporiginale[i] == "+" ||exporiginale[i] == "||" || exporiginale[i] == "-" ){
+                add = true;
+                indadd=i;
+            }
+        }
+        if(add==true){
+            file3<<codeint[exporiginale[indadd]]<<" $"<<indIntermediaire<<" "<<getVarInt(exporiginale[indadd-1])<<" "<<getVarInt(exporiginale[indadd+1])<<" // creer une variable intermediaire qui contient "<<exporiginale[indadd-1]<<exporiginale[indadd]<<exporiginale[indadd+1]<<endl;
+            exporiginale.erase(exporiginale.begin()+indadd-1,exporiginale.begin()+indadd+2); // On les enleve de l'expression
+            exporiginale.insert(exporiginale.begin()+indadd-1, "$"+to_string(indIntermediaire));
+            indIntermediaire++;
+            continue;
+        }
+    }
+    /* FIN DU TRAITEMENT -> ON ECRIT DANS LE FICHIER */
+    
+    file3<<codeint[exporiginale[3]]<<" "<<getVarInt(exporiginale[0])<<" "<<getVarInt(exporiginale[2])<<" "<<getVarInt(exporiginale[4])<<endl;
 }
