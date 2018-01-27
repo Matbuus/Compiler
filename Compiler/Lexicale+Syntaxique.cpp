@@ -55,7 +55,7 @@ string Axiome = "P";
 
 vector<string> decompos;
 enum type{
-    entier,caractère,erreur_type
+    entier,caractere,erreur_type
 };
 
 typedef struct {
@@ -358,7 +358,7 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
             else{ // x!= a
                 erreurSyntaxique = true;
                 pile.pop();
-                string topush="Erreur syntaxique. "+associationCS[x]+" manquant ligne "+to_string(num_ligne_courante)+"\n";
+                string topush="Erreur syntaxique. "+associationCS[x]+" manquant ligne "+/*to_string(num_ligne_courante)+*/"\n";
                 messages.push_back(topush);
             }
         }
@@ -389,7 +389,7 @@ vector<string> verification(string s){ //algo cours verif qu'un mot est accepté
             else{
                 // Case vide dans la table..
                 erreurSyntaxique = true;
-                string erreur ="Erreur syntaxique. Veuillez verifier la syntaxe de "+associationCS[a]+" a la ligne "+to_string(num_ligne_courante)+" ou verifier la presence du \";\" a la ligne "+to_string(num_ligne_courante-1)+" \n";
+                string erreur ="Erreur syntaxique. Veuillez verifier la syntaxe de "+associationCS[a]+" a la ligne "+/*to_string(num_ligne_courante)+*/" ou verifier la presence du \";\" a la ligne "+/*to_string(num_ligne_courante-1)+*/" \n";
                 if(find(messages.begin(), messages.end(), erreur) == messages.end())
                     messages.push_back(erreur);
                 for(int ind = i;ind<ligne.size() && !b;ind++){
@@ -697,7 +697,7 @@ void setType(string s,string ss){
             if(ss=="integer")
                 table_de_symbole[i].vtype = entier;
             else
-                table_de_symbole[i].vtype = caractère;
+                table_de_symbole[i].vtype = caractere;
         }
         
     }
