@@ -117,18 +117,16 @@ void AfficheProds();
 void GenPremiersSuivants();
 void AfficheArbreSyntaxique();
 void majTypesIds();
-<<<<<<< HEAD
 void getExp(int);
 type getTypeid(string);
 void Semantique();
 void initSynt();
 string getVarInt(string id);
 void affichageExp();
-=======
 void getType(int);
 
 void controleDeType();
->>>>>>> 86c903cb651197acb388efacc5a218feb82e8d8c
+
 
 
 
