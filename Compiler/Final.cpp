@@ -117,18 +117,14 @@ void AfficheProds();
 void GenPremiersSuivants();
 void AfficheArbreSyntaxique();
 void majTypesIds();
-<<<<<<< HEAD
 void getExp(int);
 type getTypeid(string);
 void Semantique();
 void initSynt();
 string getVarInt(string id);
 void affichageExp();
-=======
 void getType(int);
-
 void controleDeType();
->>>>>>> 86c903cb651197acb388efacc5a218feb82e8d8c
 
 
 
@@ -769,7 +765,7 @@ void decomp(string mot_lu){
                 if(containsOp(mot_lu.substr(0,found)))
                     decomp(mot_lu.substr(0,found));
                 else
-                decompos.push_back(mot_lu.substr(0,found));
+                    decompos.push_back(mot_lu.substr(0,found));
             }
             decompos.push_back(ops[i]);
             if(containsOp(mot_lu.substr(found + ops[i].size())))
@@ -1121,6 +1117,7 @@ void Semantique(){
     int typeaverif = -1;
     bool erreur = false,affectation=false,condition=false;
     int sinon = 0;
+    int nblabel = 0;
     for(int i=0;i<arbSyntaxiqueFinal.size();i++){
         affectation=false;
         erreur = false;
@@ -1129,7 +1126,7 @@ void Semantique(){
                 file3<<"debut\n\n"; // debut
             }
             if(associationCS[arbSyntaxiqueFinal[i][j]]=="if"){
-                file3<<"si "; // Condition
+                file3<<"si NOT( "; // Condition
                 condition=true;
             }
             // INCREMENTATION DES INDICES ;
@@ -1161,11 +1158,11 @@ void Semantique(){
             
             if(associationCS[arbSyntaxiqueFinal[i][j]]=="write" || associationCS[arbSyntaxiqueFinal[i][j]]=="writeln"){
                 if(getVal(apparitionIds[indId]) != 1 && getTypeid(apparitionIds[indId]) != 2){
-                      cout<<"Erreur ecriture, variable "<<getVarInt(apparitionIds[indId])<<" non initialisée.";
+                    cout<<"Erreur ecriture, variable "<<getVarInt(apparitionIds[indId])<<" non initialisée.";
                     cout<<"\n\n***************\n";
                 }
                 else
-                file3<<codeint[associationCS[arbSyntaxiqueFinal[i][j]]]<<" ("<<getVarInt(apparitionIds[indId])<<")"<<endl;
+                    file3<<codeint[associationCS[arbSyntaxiqueFinal[i][j]]]<<" ("<<getVarInt(apparitionIds[indId])<<")"<<endl;
             }
             // FIN INCREMENTATION DES INDICES ;
             
@@ -1222,7 +1219,8 @@ void Semantique(){
                     if(!erreur && !condition){
                         affichageExp();
                         if(sinon>0){
-                            file3<<"sinon\n";
+                            file3<<"label"+to_string(nblabel)+": \n";
+                            nblabel--;
                             sinon--;}
                     }
                     else if(!erreur && condition){
@@ -1233,7 +1231,8 @@ void Semantique(){
                             else
                                 file3<<exporiginale[l]<<" ";
                         }
-                        file3<<"alors\n";
+                        nblabel++;
+                        file3<<" ) alors go to label"+to_string(nblabel)+"\n";
                         sinon++;
                         condition = false;
                         
@@ -1272,8 +1271,10 @@ void initSynt(){
 // Avoir la variable associée a chaque id, si c'est une variable int ou un nombre, on retourne le nom sinon
 // On retourne $ + son indice dans la table des id
 string getVarInt(string id){
-    if(id[0]=='$' || id[0]=='0'|| id[0]=='1'|| id[0]=='2'|| id[0]=='3'|| id[0]=='4'|| id[0]=='5'|| id[0]=='6'|| id[0]=='7'|| id[0]=='8'|| id[0]=='9')
+    if(id[0]=='$' || id[0]=='1'|| id[0]=='2'|| id[0]=='3'|| id[0]=='4'|| id[0]=='5'|| id[0]=='6'|| id[0]=='7'|| id[0]=='8'|| id[0]=='9')
         return id;
+    if(id[0]=='0')
+        return "$0";
     // Sinon si c'est un id
     string s = "$";
     int i;
@@ -1297,13 +1298,13 @@ void affichageExp(){
                 indmul=i; // On enregistre son id
             }
         }
-            if(mul==true){
-                file3<<codeint[exporiginale[indmul]]<<" $"<<indIntermediaire<<" "<<getVarInt(exporiginale[indmul-1])<<" "<<getVarInt(exporiginale[indmul+1])<<" // creer une variable intermediaire $"<<indIntermediaire<<" qui contient  "<<exporiginale[indmul-1]<<exporiginale[indmul]<<exporiginale[indmul+1]<<endl; // Création de la varibale intermediaire + ecriture dans le fichier
-                exporiginale.erase(exporiginale.begin()+indmul-1,exporiginale.begin()+indmul+2); // On les enleve de l'expression
-                exporiginale.insert(exporiginale.begin()+indmul-1, "$"+to_string(indIntermediaire)); // On insere la variable intermediaire dans l'expression
-                indIntermediaire++; // On incremente la variable intermediaire
-                continue;
-            }
+        if(mul==true){
+            file3<<codeint[exporiginale[indmul]]<<" $"<<indIntermediaire<<" "<<getVarInt(exporiginale[indmul-1])<<" "<<getVarInt(exporiginale[indmul+1])<<" // creer une variable intermediaire $"<<indIntermediaire<<" qui contient  "<<exporiginale[indmul-1]<<exporiginale[indmul]<<exporiginale[indmul+1]<<endl; // Création de la varibale intermediaire + ecriture dans le fichier
+            exporiginale.erase(exporiginale.begin()+indmul-1,exporiginale.begin()+indmul+2); // On les enleve de l'expression
+            exporiginale.insert(exporiginale.begin()+indmul-1, "$"+to_string(indIntermediaire)); // On insere la variable intermediaire dans l'expression
+            indIntermediaire++; // On incremente la variable intermediaire
+            continue;
+        }
         
         /* MEME CHOSE POUR L ADDITION */
         
@@ -1322,6 +1323,9 @@ void affichageExp(){
         }
     }
     /* FIN DU TRAITEMENT -> ON ECRIT DANS LE FICHIER */
-    
+    if(exporiginale.size()<5 && exporiginale[1] == ":="){
+        exporiginale.push_back("+");
+        exporiginale.push_back("0");
+    }
     file3<<codeint[exporiginale[3]]<<" "<<getVarInt(exporiginale[0])<<" "<<getVarInt(exporiginale[2])<<" "<<getVarInt(exporiginale[4])<<endl;
 }
